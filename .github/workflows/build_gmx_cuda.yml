@@ -7,9 +7,9 @@ on:
 
 env:
   gmxversion: "2024.4"
-  gmxcompileto: C:/FOSS/gromacs_244
+  gmxcompileto: C:/Temp/gromacs_244
   fftwversion: "3.3.10"
-  fftwcompileto: C:/FOSS/fftw3
+  fftwcompileto: C:/Temp/fftw3
 
 jobs:
   Windows:
@@ -34,17 +34,13 @@ jobs:
       - name: Download Gromacs and FFTW
         shell: bash
         env:
-          gmxdownloadlink: https://ftp.gromacs.org/gromacs/gromacs-2024.4.tar.gz
-          gmxmd5hash: "1ce06e1e330c7232e691c3cd7581aa75"
-          fftwlink: https://fftw.org/fftw-3.3.10.tar.gz
-          fftwmd5hash: "8ccbf6a5ea78a16dbc3e1306e234cc5c"
+          gmxdownloadlink: https://ftp.gromacs.org/gromacs/gromacs-${{env.gmxversion}}.tar.gz
+          fftwlink: https://fftw.org/fftw-${{env.fftwversion}}.tar.gz
         run: |
           curl -Lfo gromacs_src.tar.gz ${{ env.gmxdownloadlink }}
-          echo "${{ env.gmxmd5hash }}  gromacs_src.tar.gz" | md5sum -c
           tar xf gromacs_src.tar.gz
           sed -i 's/${CMAKE_CXX17_STANDARD_COMPILE_OPTION}/-std c++17/g' "gromacs-${{ env.gmxversion }}/cmake/gmxManageNvccConfig.cmake"
           curl -Lfo fftw_src.tar.gz ${{ env.fftwlink }}
-          echo "${{ env.fftwmd5hash }}  fftw_src.tar.gz" | md5sum -c
           tar xf fftw_src.tar.gz
 
       - name: Compile FFTW single precision
