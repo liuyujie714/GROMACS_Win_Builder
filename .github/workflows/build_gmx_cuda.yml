@@ -69,7 +69,7 @@ jobs:
           choco install ninja
           cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH=${{ env.fftwcompileto }} -DGMX_USE_SIMD_KERNELS=OFF -DGMX_SIMD=AVX2_256 -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release
           sed -i 's/-MD/-MT/g' build.ninja
-          ninja install -j2
+          ninja install -j4
           Set-Location ..\..
           Remove-Item -Path gromacs-${{ env.gmxversion }} -Force -Recurse
 
