@@ -13,6 +13,7 @@ env:
 
 jobs:
   Windows:
+    # windows-2022 has issues with CUDA 12.4.1
     runs-on: windows-latest
     if: github.event.repository.owner.id == github.event.sender.id
     steps:
@@ -50,7 +51,7 @@ jobs:
           Set-Location fftw-${{ env.fftwversion }} 
           New-Item -ItemType Directory -Name build
           Set-Location build
-          cmake .. "-DCMAKE_INSTALL_PREFIX=${{ env.fftwcompileto }}" "-DENABLE_AVX=ON" "-DENABLE_AVX2=ON" "-DENABLE_SSE2=ON" "-DENABLE_THREADS=ON" "-DWITH_COMBINED_THREADS=ON" "-DENABLE_FLOAT=ON" "-DBUILD_SHARED_LIBS=ON" -G "Visual Studio 17 2022" -T "v142" -A "x64"
+          cmake .. -DCMAKE_INSTALL_PREFIX=${{ env.fftwcompileto }} -DENABLE_AVX=ON -DENABLE_AVX2=ON -DENABLE_SSE2=ON -DENABLE_THREADS=ON" "-DWITH_COMBINED_THREADS=ON -DENABLE_FLOAT=ON -DBUILD_SHARED_LIBS=ON -G "Visual Studio 17 2022" -T "v142" -A "x64"
           cmake --build . --target INSTALL --config Release -- "-maxCpuCount" "-p:CL_MPCount=3"
           Set-Location ..\..
           Remove-Item -Path fftw-${{ env.fftwversion }} -Force -Recurse
@@ -67,6 +68,7 @@ jobs:
           New-Item -ItemType Directory -Name build
           Set-Location build
           choco install ninja
+          call "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat" x64 -vcvars_ver=14.29
           cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH=${{ env.fftwcompileto }} -DGMX_USE_SIMD_KERNELS=OFF -DGMX_SIMD=AVX2_256 -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release
           sed -i 's/-MD/-MT/g' build.ninja
           ninja install -j4
