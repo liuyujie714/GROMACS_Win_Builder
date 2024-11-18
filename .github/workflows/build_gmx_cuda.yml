@@ -62,7 +62,7 @@ jobs:
         uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: amd64
-          # must use v142 toolset
+          # must use v142 to avoid compile errors for ninja about calc_verletbuf.cpp code
           toolset: 14.29
 
       - name: Compile GROMACS CUDA
@@ -72,7 +72,7 @@ jobs:
           New-Item -ItemType Directory -Name build
           Set-Location build
           choco install ninja
-          cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH=${{ env.fftwcompileto }} -DGMX_USE_SIMD_KERNELS=OFF -DGMX_SIMD=AVX2_256 -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release
+          cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH=${{ env.fftwcompileto }} -DGMX_SIMD=AVX2_256 -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release
           sed -i 's/-MD/-MT/g' build.ninja
           ninja install -j4
           Set-Location ..\..
