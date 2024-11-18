@@ -11,7 +11,6 @@ env:
   fftwversion: "3.3.10"
   fftwcompileto: C:/FOSS/fftw3
 
-
 jobs:
   Windows:
     runs-on: windows-2022
