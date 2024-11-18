@@ -55,6 +55,11 @@ jobs:
           Set-Location ..\..
           Remove-Item -Path fftw-${{ env.fftwversion }} -Force -Recurse
 
+      - name: Configure build for amd64
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: amd64
+
       - name: Compile GROMACS CUDA
         shell: pwsh
         run: |
