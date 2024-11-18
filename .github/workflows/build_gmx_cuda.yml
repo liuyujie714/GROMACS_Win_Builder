@@ -60,6 +60,7 @@ jobs:
         uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: amd64
+          toolset: 14.29
 
       - name: Compile GROMACS CUDA
         shell: pwsh
@@ -68,7 +69,6 @@ jobs:
           New-Item -ItemType Directory -Name build
           Set-Location build
           choco install ninja
-          cmd /c "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat" x64 -vcvars_ver="14.29"
           cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH=${{ env.fftwcompileto }} -DGMX_USE_SIMD_KERNELS=OFF -DGMX_SIMD=AVX2_256 -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release
           sed -i 's/-MD/-MT/g' build.ninja
           ninja install -j4
