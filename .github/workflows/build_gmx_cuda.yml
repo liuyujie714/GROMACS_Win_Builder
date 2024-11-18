@@ -19,18 +19,6 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
 
-      - name: Install CUDA Toolkit
-        id: cuda-toolkit
-        uses: Jimver/cuda-toolkit@v0.2.18
-        with:
-          cuda: "12.4.1"
-      
-      - name: Copy BuildCustomizations
-        shell: pwsh
-        run: |
-          Copy-Item -Path "${{ steps.cuda-toolkit.outputs.CUDA_PATH }}\extras\visual_studio_integration\MSBuildExtensions\*" -Destination "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Microsoft\VC\v170\BuildCustomizations\" -Force
-          Copy-Item -Path "${{ steps.cuda-toolkit.outputs.CUDA_PATH }}\extras\visual_studio_integration\MSBuildExtensions\*" -Destination "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Microsoft\VC\v160\BuildCustomizations\" -Force
-
       - name: Download Gromacs and FFTW
         shell: bash
         env:
@@ -42,6 +30,18 @@ jobs:
           sed -i 's/${CMAKE_CXX17_STANDARD_COMPILE_OPTION}/-std c++17/g' "gromacs-${{ env.gmxversion }}/cmake/gmxManageNvccConfig.cmake"
           curl -Lfo fftw_src.tar.gz ${{ env.fftwlink }}
           tar xf fftw_src.tar.gz
+
+      - name: Install CUDA Toolkit
+        id: cuda-toolkit
+        uses: Jimver/cuda-toolkit@v0.2.18
+        with:
+          cuda: "12.4.1"
+      
+      - name: Copy BuildCustomizations
+        shell: pwsh
+        run: |
+          Copy-Item -Path "${{ steps.cuda-toolkit.outputs.CUDA_PATH }}\extras\visual_studio_integration\MSBuildExtensions\*" -Destination "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Microsoft\VC\v170\BuildCustomizations\" -Force
+          Copy-Item -Path "${{ steps.cuda-toolkit.outputs.CUDA_PATH }}\extras\visual_studio_integration\MSBuildExtensions\*" -Destination "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Microsoft\VC\v160\BuildCustomizations\" -Force
 
       - name: Compile FFTW single precision
         shell: pwsh
