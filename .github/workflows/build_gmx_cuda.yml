@@ -13,10 +13,12 @@ env:
 
 jobs:
   Windows:
-    # windows-2022 has issues with CUDA 12.4.1
-    runs-on: windows-latest
+    runs-on: windows-2022
     if: github.event.repository.owner.id == github.event.sender.id
     steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
       - name: Install CUDA Toolkit
         id: cuda-toolkit
         uses: Jimver/cuda-toolkit@v0.2.18
@@ -60,6 +62,7 @@ jobs:
         uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: amd64
+          # must use v142 toolset
           toolset: 14.29
 
       - name: Compile GROMACS CUDA
@@ -145,7 +148,7 @@ jobs:
       
 
       - name: Download Windows artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: GROMACS-${{ env.gmxversion }}_GPU 
 
