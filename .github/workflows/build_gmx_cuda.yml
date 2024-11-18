@@ -94,7 +94,7 @@ jobs:
           Set-Location ${{ env.gmxcompileto }}\bin
           .\gmx.exe -version
 
-      - name: Upload Firmwares
+      - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
         if: ${{ success() }}
         with:
