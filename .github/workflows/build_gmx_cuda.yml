@@ -122,10 +122,10 @@ jobs:
           echo "GITHUB_USER=$( echo ${{ github.repository }} | cut -d/ -f1 )" >> $GITHUB_ENV
           echo "GITHUB_REPO=$( echo ${{ github.repository }} | cut -d/ -f2 )" >> $GITHUB_ENV
 
-      - name: Move/Create continuous tag
-        run: |
-          git tag --force ${{ env.RELEASE_TAG }} ${{ github.sha }}
-          git push --tags --force
+      # - name: Move/Create continuous tag
+      #   run: |
+      #     git tag --force ${{ env.RELEASE_TAG }} ${{ github.sha }}
+      #     git push --tags --force
       
       - name: Check continuous release status
         run: |
