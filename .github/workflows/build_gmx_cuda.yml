@@ -13,7 +13,7 @@ env:
 
 jobs:
   Windows:
-    runs-on: windows-2019
+    runs-on: windows-2022
     if: github.event.repository.owner.id == github.event.sender.id
     steps:
       - name: Install CUDA Toolkit
