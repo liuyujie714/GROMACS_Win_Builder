@@ -13,14 +13,14 @@ env:
 
 jobs:
   Windows:
-    runs-on: windows-2019
+    runs-on: windows-2022
     if: github.event.repository.owner.id == github.event.sender.id
     steps:
       - name: Install CUDA Toolkit
         id: cuda-toolkit
         uses: Jimver/cuda-toolkit@v0.2.18
         with:
-          cuda: "11.6.1"
+          cuda: "12.4.1"
       
       - name: Copy BuildCustomizations
         shell: pwsh
@@ -55,15 +55,21 @@ jobs:
           Set-Location ..\..
           Remove-Item -Path fftw-${{ env.fftwversion }} -Force -Recurse
 
+      - name: Configure build for amd64
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: amd64
+
       - name: Compile GROMACS CUDA
         shell: pwsh
         run: |
           Set-Location gromacs-${{ env.gmxversion }}
           New-Item -ItemType Directory -Name build
           Set-Location build
-          cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH=${{ env.fftwcompileto }} -DGMX_SIMD=AVX2_256 -DGMX_GPU=CUDA -A "x64"
+          choco install ninja
+          cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH=${{ env.fftwcompileto }} -DGMX_USE_SIMD_KERNELS=OFF -DGMX_SIMD=AVX2_256 -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release
           sed -i 's/-MD/-MT/g' build.ninja
-          ninja install
+          ninja install -j2
           Set-Location ..\..
           Remove-Item -Path gromacs-${{ env.gmxversion }} -Force -Recurse
 
