@@ -20,7 +20,7 @@ jobs:
         id: cuda-toolkit
         uses: Jimver/cuda-toolkit@v0.2.18
         with:
-          cuda: "11.6.1"
+          cuda: "12.4.1"
       
       - name: Copy BuildCustomizations
         shell: pwsh
