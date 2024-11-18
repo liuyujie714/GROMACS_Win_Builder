@@ -66,10 +66,12 @@ jobs:
           Set-Location gromacs-${{ env.gmxversion }}
           New-Item -ItemType Directory -Name build
           Set-Location build
-          choco install ninja
-          cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH=${{ env.fftwcompileto }} -DGMX_SIMD=AVX2_256 -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release
-          sed -i 's/-MD/-MT/g' build.ninja
-          ninja install
+          #choco install ninja
+          #cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH=${{ env.fftwcompileto }} -DGMX_SIMD=AVX2_256 -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release
+          #sed -i 's/-MD/-MT/g' build.ninja
+          #ninja install
+          cmake .. -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH=${{ env.fftwcompileto }} -DGMX_SIMD=AVX2_256 -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release -G "Visual Studio 17 2022" -T "v142" -A "x64"
+          cmake --build . --target INSTALL --config Release -- "-maxCpuCount" "-p:CL_MPCount=3"
           Set-Location ..\..
           Remove-Item -Path gromacs-${{ env.gmxversion }} -Force -Recurse
 
