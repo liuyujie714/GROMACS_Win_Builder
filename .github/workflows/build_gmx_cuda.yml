@@ -19,81 +19,84 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
 
-      - name: Download Gromacs and FFTW
-        shell: bash
-        env:
-          gmxdownloadlink: https://ftp.gromacs.org/gromacs/gromacs-${{env.gmxversion}}.tar.gz
-          fftwlink: https://fftw.org/fftw-${{env.fftwversion}}.tar.gz
-        run: |
-          curl -Lfo gromacs_src.tar.gz ${{ env.gmxdownloadlink }}
-          tar xf gromacs_src.tar.gz
-          sed -i 's/${CMAKE_CXX17_STANDARD_COMPILE_OPTION}/-std c++17/g' "gromacs-${{ env.gmxversion }}/cmake/gmxManageNvccConfig.cmake"
-          curl -Lfo fftw_src.tar.gz ${{ env.fftwlink }}
-          tar xf fftw_src.tar.gz
+      # - name: Download Gromacs and FFTW
+      #   shell: bash
+      #   env:
+      #     gmxdownloadlink: https://ftp.gromacs.org/gromacs/gromacs-${{env.gmxversion}}.tar.gz
+      #     fftwlink: https://fftw.org/fftw-${{env.fftwversion}}.tar.gz
+      #   run: |
+      #     curl -Lfo gromacs_src.tar.gz ${{ env.gmxdownloadlink }}
+      #     tar xf gromacs_src.tar.gz
+      #     sed -i 's/${CMAKE_CXX17_STANDARD_COMPILE_OPTION}/-std c++17/g' "gromacs-${{ env.gmxversion }}/cmake/gmxManageNvccConfig.cmake"
+      #     curl -Lfo fftw_src.tar.gz ${{ env.fftwlink }}
+      #     tar xf fftw_src.tar.gz
 
-      - name: Install CUDA Toolkit
-        id: cuda-toolkit
-        uses: Jimver/cuda-toolkit@v0.2.18
-        with:
-          cuda: "12.4.1"
+      # - name: Install CUDA Toolkit
+      #   id: cuda-toolkit
+      #   uses: Jimver/cuda-toolkit@v0.2.18
+      #   with:
+      #     cuda: "12.4.1"
       
-      - name: Copy BuildCustomizations
-        shell: pwsh
-        run: |
-          Copy-Item -Path "${{ steps.cuda-toolkit.outputs.CUDA_PATH }}\extras\visual_studio_integration\MSBuildExtensions\*" -Destination "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Microsoft\VC\v170\BuildCustomizations\" -Force
-          Copy-Item -Path "${{ steps.cuda-toolkit.outputs.CUDA_PATH }}\extras\visual_studio_integration\MSBuildExtensions\*" -Destination "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Microsoft\VC\v160\BuildCustomizations\" -Force
+      # - name: Copy BuildCustomizations
+      #   shell: pwsh
+      #   run: |
+      #     Copy-Item -Path "${{ steps.cuda-toolkit.outputs.CUDA_PATH }}\extras\visual_studio_integration\MSBuildExtensions\*" -Destination "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Microsoft\VC\v170\BuildCustomizations\" -Force
+      #     Copy-Item -Path "${{ steps.cuda-toolkit.outputs.CUDA_PATH }}\extras\visual_studio_integration\MSBuildExtensions\*" -Destination "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Microsoft\VC\v160\BuildCustomizations\" -Force
 
-      - name: Compile FFTW single precision
-        shell: pwsh
-        run: |
-          Set-Location fftw-${{ env.fftwversion }} 
-          New-Item -ItemType Directory -Name build
-          Set-Location build
-          cmake .. -DCMAKE_INSTALL_PREFIX=${{ env.fftwcompileto }} -DENABLE_AVX=ON -DENABLE_AVX2=ON -DENABLE_SSE2=ON -DENABLE_THREADS=ON -DWITH_COMBINED_THREADS=ON -DENABLE_FLOAT=ON -DBUILD_SHARED_LIBS=ON -G "Visual Studio 17 2022" -T "v142" -A "x64"
-          cmake --build . --target INSTALL --config Release -- "-maxCpuCount" "-p:CL_MPCount=3"
-          Set-Location ..\..
-          Remove-Item -Path fftw-${{ env.fftwversion }} -Force -Recurse
+      # - name: Compile FFTW single precision
+      #   shell: pwsh
+      #   run: |
+      #     Set-Location fftw-${{ env.fftwversion }} 
+      #     New-Item -ItemType Directory -Name build
+      #     Set-Location build
+      #     cmake .. -DCMAKE_INSTALL_PREFIX=${{ env.fftwcompileto }} -DENABLE_AVX=ON -DENABLE_AVX2=ON -DENABLE_SSE2=ON -DENABLE_THREADS=ON -DWITH_COMBINED_THREADS=ON -DENABLE_FLOAT=ON -DBUILD_SHARED_LIBS=ON -G "Visual Studio 17 2022" -T "v142" -A "x64"
+      #     cmake --build . --target INSTALL --config Release -- "-maxCpuCount" "-p:CL_MPCount=3"
+      #     Set-Location ..\..
+      #     Remove-Item -Path fftw-${{ env.fftwversion }} -Force -Recurse
 
-      - name: Configure build for amd64
-        uses: ilammy/msvc-dev-cmd@v1
-        with:
-          arch: amd64
-          # must use v142 to avoid compile errors for ninja about calc_verletbuf.cpp code
-          toolset: 14.29
+      # - name: Configure build for amd64
+      #   uses: ilammy/msvc-dev-cmd@v1
+      #   with:
+      #     arch: amd64
+      #     # must use v142 to avoid compile errors for ninja about calc_verletbuf.cpp code
+      #     toolset: 14.29
 
-      - name: Compile GROMACS CUDA
-        shell: pwsh
-        run: |
-          Set-Location gromacs-${{ env.gmxversion }}
-          New-Item -ItemType Directory -Name build
-          Set-Location build
-          choco install ninja
-          cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH=${{ env.fftwcompileto }} -DGMX_SIMD=AVX2_256 -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release
-          sed -i 's/-MD/-MT/g' build.ninja
-          ninja install -j4
-          Set-Location ..\..
-          Remove-Item -Path gromacs-${{ env.gmxversion }} -Force -Recurse
+      # - name: Compile GROMACS CUDA
+      #   shell: pwsh
+      #   run: |
+      #     Set-Location gromacs-${{ env.gmxversion }}
+      #     New-Item -ItemType Directory -Name build
+      #     Set-Location build
+      #     choco install ninja
+      #     cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH=${{ env.fftwcompileto }} -DGMX_SIMD=AVX2_256 -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release
+      #     sed -i 's/-MD/-MT/g' build.ninja
+      #     ninja install -j4
+      #     Set-Location ..\..
+      #     Remove-Item -Path gromacs-${{ env.gmxversion }} -Force -Recurse
 
-      - name: Checksum
-        shell: bash
-        run: |
-          cd `cygpath "${{ env.gmxcompileto }}"/bin`
-          sha256sum gmx.exe | tee gmx.exe.sha256
+      # - name: Checksum
+      #   shell: bash
+      #   run: |
+      #     cd `cygpath "${{ env.gmxcompileto }}"/bin`
+      #     sha256sum gmx.exe | tee gmx.exe.sha256
 
       - name: Copy DLLs and Test
-        shell: pwsh
+        shell: bash
         run: |
-          Copy-Item -Path "${{ steps.cuda-toolkit.outputs.CUDA_PATH }}\bin\cufft64_*.dll" -Destination "${{ env.gmxcompileto }}\bin\" -Force
-          Copy-Item -Path "${{ env.fftwcompileto }}\bin\*.dll" -Destination "${{ env.gmxcompileto }}\bin\" -Force
-          Set-Location ${{ env.gmxcompileto }}\bin
-          .\gmx.exe -version
+          # Copy-Item -Path "${{ steps.cuda-toolkit.outputs.CUDA_PATH }}\bin\cufft64_*.dll" -Destination "${{ env.gmxcompileto }}\bin\" -Force
+          # Copy-Item -Path "${{ env.fftwcompileto }}\bin\*.dll" -Destination "${{ env.gmxcompileto }}\bin\" -Force
+          # tar -czvf GROMACS-${{ env.gmxversion }}_GPU.tar.gz GROMACS-${{ env.gmxversion }}_GPU 
+          # Set-Location ${{ env.gmxcompileto }}\bin
+          touch xx.txt
+          tar -czvf GROMACS-${{ env.gmxversion }}_GPU.tar.gz xx.txt
+      #     .\gmx.exe -version
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
         if: ${{ success() }}
         with:
-          name: GROMACS-${{ env.gmxversion }}_GPU
-          path: ${{ env.gmxcompileto }}
+          name: GROMACS-${{ env.gmxversion }}_GPU.tar.gz
+          path: GROMACS-${{ env.gmxversion }}_GPU.tar.gz
 
 
   # refer to https://github.com/endless-sky/endless-sky/blob/master/.github/workflows/cd.yaml
@@ -152,5 +155,4 @@ jobs:
         env:
           OUTPUT_TAR: GROMACS-${{ env.gmxversion }}_GPU.tar.gz
         run: |
-          tar -czvf ${{env.OUTPUT_TAR}} GROMACS-${{ env.gmxversion }}_GPU
           github-release upload --tag ${{ env.RELEASE_TAG }} --replace --name ${{env.OUTPUT_TAR}} --file ${{env.OUTPUT_TAR}}
