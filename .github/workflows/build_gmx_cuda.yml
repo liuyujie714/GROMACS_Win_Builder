@@ -76,8 +76,9 @@ jobs:
           choco install ninja
           ver=${{ env.gmxversion }}
           if [[ ${ver%%.*} -ge 2025 ]];then
-            # use clang-cl for 2025
-            cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH=${{ env.fftwcompileto }} -DGMX_SIMD=AVX2_256 -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl -DCMAKE_CUDA_HOST_COMPILER=""
+            # turn off clovars for 2025 because some size_t loop variables can not be supported by VS openmp 2.0
+            # turn off plumed for 2025 because it is not supported by VS 17
+            cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH=${{ env.fftwcompileto }} -DGMX_SIMD=AVX2_256 -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release -DGMX_USE_COLVARS=NONE -DGMX_USE_PLUMED=OFF
           elif [[ ${ver%%.*} -lt 2024 ]];then
             # turn off GMX_USE_SIMD_KERNELS
             cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH=${{ env.fftwcompileto }} -DGMX_SIMD=AVX2_256 -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release -DGMX_USE_SIMD_KERNELS=OFF
