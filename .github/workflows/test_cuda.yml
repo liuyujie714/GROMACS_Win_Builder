@@ -36,7 +36,7 @@ jobs:
       - name: Install CUDA Toolkit
         shell: pwsh
         run: |
-          choco install cuda --version=12.4.1
+          choco install cuda --version=12.4.1.551
           $env:CUDA_PATH="C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.4"
           echo "CUDA_PATH=$env:CUDA_PATH" >> $GITHUB_ENV
           echo "PATH=$env:CUDA_PATH\bin;$env:PATH" >> $GITHUB_ENV
