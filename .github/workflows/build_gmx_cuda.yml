@@ -33,7 +33,7 @@ jobs:
           # remove 35 and 37 for cuda 12
           ver=${{ env.gmxversion }}
           if [[ ${ver%%.*} -lt 2024 ]];then
-            sed -i '/compute_35\|compute_37/d "gromacs-${{ env.gmxversion }}/cmake/gmxManageNvccConfig.cmake"
+            sed -i '/compute_35\|compute_37/d' "gromacs-${{ env.gmxversion }}/cmake/gmxManageNvccConfig.cmake"
           fi
           curl -Lfo fftw_src.tar.gz ${{ env.fftwlink }}
           tar xf fftw_src.tar.gz
