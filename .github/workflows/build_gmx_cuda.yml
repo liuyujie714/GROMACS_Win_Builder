@@ -10,11 +10,13 @@ env:
   gmxcompileto: C:/Temp/gromacs_244
   fftwversion: "3.3.10"
   fftwcompileto: C:/Temp/fftw3
-  OUTPUT_TAR: GROMACS-${{ env.gmxversion }}_GPU.tar.gz
 
 jobs:
   Windows:
     runs-on: windows-2022
+    env:
+      OUTPUT_TAR: GROMACS-${{ env.gmxversion }}_GPU.tar.gz
+
     if: github.event.repository.owner.id == github.event.sender.id
     steps:
       - name: Check out code
@@ -86,18 +88,18 @@ jobs:
         run: |
           # Copy-Item -Path "${{ steps.cuda-toolkit.outputs.CUDA_PATH }}\bin\cufft64_*.dll" -Destination "${{ env.gmxcompileto }}\bin\" -Force
           # Copy-Item -Path "${{ env.fftwcompileto }}\bin\*.dll" -Destination "${{ env.gmxcompileto }}\bin\" -Force
-          # tar -czvf GROMACS-${{ env.gmxversion }}_GPU.tar.gz GROMACS-${{ env.gmxversion }}_GPU 
+          # tar -czvf ${{env.OUTPUT_TAR}} GROMACS-${{ env.gmxversion }}_GPU 
           # Set-Location ${{ env.gmxcompileto }}\bin
           touch xx.txt
-          tar -czvf GROMACS-${{ env.gmxversion }}_GPU.tar.gz xx.txt
+          tar -czvf ${{env.OUTPUT_TAR}} xx.txt
       #     .\gmx.exe -version
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
         if: ${{ success() }}
         with:
-          name: GROMACS-${{ env.gmxversion }}_GPU.tar.gz
-          path: GROMACS-${{ env.gmxversion }}_GPU.tar.gz
+          name: ${{env.OUTPUT_TAR}}
+          path: ${{env.OUTPUT_TAR}}
 
 
   # refer to https://github.com/endless-sky/endless-sky/blob/master/.github/workflows/cd.yaml
@@ -109,6 +111,7 @@ jobs:
         RELEASE_COMMAND: release
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         RELEASE_TAG: bleed
+        OUTPUT_TAR: GROMACS-${{ env.gmxversion }}_GPU.tar.gz
 
     steps:
       - uses: actions/checkout@v3
@@ -150,7 +153,7 @@ jobs:
       - name: Download Windows artifact
         uses: actions/download-artifact@v4
         with:
-          name: GROMACS-${{ env.gmxversion }}_GPU 
+          name: ${{env.OUTPUT_TAR}}
 
       - name: Package Linux and Windows artifact to release
         run: |
