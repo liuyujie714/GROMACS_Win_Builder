@@ -69,23 +69,21 @@ jobs:
           toolset: 14.29
 
       - name: Compile GROMACS CUDA
-        shell: pwsh
+        shell: bash
         run: |
-          Set-Location gromacs-${{ env.gmxversion }}
-          New-Item -ItemType Directory -Name build
-          Set-Location build
+          cd gromacs-${{ env.gmxversion }} && mkdir build && cd build
           choco install ninja
           ver=${{ env.gmxversion }}
           if [[ ${ver%%.*} -lt 2024 ]];then
-            # turn of GMX_USE_SIMD_KERNELS
+            # turn off GMX_USE_SIMD_KERNELS
             cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH=${{ env.fftwcompileto }} -DGMX_SIMD=AVX2_256 -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release -DGMX_USE_SIMD_KERNELS=OFF
           else
             cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH=${{ env.fftwcompileto }} -DGMX_SIMD=AVX2_256 -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release
           fi
           sed -i 's/-MD/-MT/g' build.ninja
           ninja install -j4
-          Set-Location ..\..
-          Remove-Item -Path gromacs-${{ env.gmxversion }} -Force -Recurse
+          cd ../../
+          rm -rf gromacs-${{ env.gmxversion }}
 
       - name: Copy DLLs and Test
         shell: pwsh
