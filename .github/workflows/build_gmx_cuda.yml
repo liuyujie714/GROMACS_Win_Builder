@@ -149,7 +149,7 @@ jobs:
       - name: Download Windows artifact
         uses: actions/download-artifact@v4
         with:
-          name: GROMACS-${{ env.gmxversion }}_GPU 
+          name: GROMACS-${{ env.gmxversion }}_GPU.tar.gz
 
       - name: Package Linux and Windows artifact to release
         env:
