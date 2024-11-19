@@ -10,6 +10,7 @@ env:
   gmxcompileto: C:/Temp/gromacs_244
   fftwversion: "3.3.10"
   fftwcompileto: C:/Temp/fftw3
+  OUTPUT_TAR: GROMACS-${{ env.gmxversion }}_GPU.tar.gz
 
 jobs:
   Windows:
@@ -149,10 +150,8 @@ jobs:
       - name: Download Windows artifact
         uses: actions/download-artifact@v4
         with:
-          name: GROMACS-${{ env.gmxversion }}_GPU.tar.gz
+          name: GROMACS-${{ env.gmxversion }}_GPU 
 
       - name: Package Linux and Windows artifact to release
-        env:
-          OUTPUT_TAR: GROMACS-${{ env.gmxversion }}_GPU.tar.gz
         run: |
           github-release upload --tag ${{ env.RELEASE_TAG }} --replace --name ${{env.OUTPUT_TAR}} --file ${{env.OUTPUT_TAR}}
