@@ -77,25 +77,20 @@ jobs:
           Remove-Item -Path gromacs-${{ env.gmxversion }} -Force -Recurse
 
       - name: Copy DLLs and Test
-        env:
-          OUTPUT_TAR: GROMACS-${{ env.gmxversion }}_GPU.tar.gz
         shell: pwsh
         run: |
           Copy-Item -Path "${{ steps.cuda-toolkit.outputs.CUDA_PATH }}\bin\cufft64_*.dll" -Destination "${{ env.gmxcompileto }}\bin\" -Force
           Copy-Item -Path "${{ env.fftwcompileto }}\bin\*.dll" -Destination "${{ env.gmxcompileto }}\bin\" -Force
           Set-Location ${{ env.gmxcompileto }}
-          tar -czvf ${{env.OUTPUT_TAR}} *
           Set-Location ${{ env.gmxcompileto }}\bin
           .\gmx.exe -version
 
       - name: Upload Windows artifact
-        env:
-          OUTPUT_TAR: GROMACS-${{ env.gmxversion }}_GPU.tar.gz
         uses: actions/upload-artifact@v4
         if: ${{ success() }}
         with:
-          name: ${{ env.OUTPUT_TAR }}
-          path: ${{ env.gmxcompileto }}/${{env.OUTPUT_TAR}}
+          name: gmx_bins
+          path: ${{ env.gmxcompileto }}
 
 
   # refer to https://github.com/endless-sky/endless-sky/blob/master/.github/workflows/cd.yaml
@@ -146,14 +141,14 @@ jobs:
       
 
       - name: Download Windows artifact
-        env:
-          OUTPUT_TAR: GROMACS-${{ env.gmxversion }}_GPU.tar.gz
         uses: actions/download-artifact@v4
         with:
-          name: ${{env.OUTPUT_TAR}}
+          name: gmx_bins
 
-      - name: Package Linux and Windows artifact to release
+      - name: Package Windows artifact to release
         env:
           OUTPUT_TAR: GROMACS-${{ env.gmxversion }}_GPU.tar.gz
         run: |
+          ls -alt
+          tar -czvf ${{env.OUTPUT_TAR}} share include bin
           github-release upload --tag ${{ env.RELEASE_TAG }} --replace --name ${{env.OUTPUT_TAR}} --file ${{env.OUTPUT_TAR}}
