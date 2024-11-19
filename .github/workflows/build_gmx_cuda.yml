@@ -30,6 +30,11 @@ jobs:
           curl -Lfo gromacs_src.tar.gz ${{ env.gmxdownloadlink }}
           tar xf gromacs_src.tar.gz
           sed -i 's/${CMAKE_CXX17_STANDARD_COMPILE_OPTION}/-std c++17/g' "gromacs-${{ env.gmxversion }}/cmake/gmxManageNvccConfig.cmake"
+          # remove 35 and 37 for cuda 12
+          ver=${{ env.gmxversion }}
+          if [[ ${ver%%.*} -lt 2024 ]];then
+            sed -i '/compute_35\|compute_37/d "gromacs-${{ env.gmxversion }}/cmake/gmxManageNvccConfig.cmake"
+          fi
           curl -Lfo fftw_src.tar.gz ${{ env.fftwlink }}
           tar xf fftw_src.tar.gz
 
