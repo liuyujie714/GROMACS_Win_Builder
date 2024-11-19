@@ -7,6 +7,7 @@ on:
 
 env:
   gmxversion: "2025.0-beta"
+  cudaversion: "12.5.1"
   gmxcompileto: C:/Temp/gromacs_244
   fftwversion: "3.3.10"
   fftwcompileto: C:/Temp/fftw3
@@ -42,7 +43,7 @@ jobs:
         id: cuda-toolkit
         uses: Jimver/cuda-toolkit@v0.2.18
         with:
-          cuda: "12.4.1"
+          cuda: ${{ env.cudaversion}}
       
       - name: Copy BuildCustomizations
         shell: pwsh
@@ -76,7 +77,7 @@ jobs:
           ver=${{ env.gmxversion }}
           if [[ ${ver%%.*} -ge 2025 ]];then
             # use clang-cl for 2025
-            cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH=${{ env.fftwcompileto }} -DGMX_SIMD=AVX2_256 -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl
+            cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH=${{ env.fftwcompileto }} -DGMX_SIMD=AVX2_256 -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl -DCMAKE_CUDA_HOST_COMPILER=""
           elif [[ ${ver%%.*} -lt 2024 ]];then
             # turn off GMX_USE_SIMD_KERNELS
             cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH=${{ env.fftwcompileto }} -DGMX_SIMD=AVX2_256 -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release -DGMX_USE_SIMD_KERNELS=OFF
