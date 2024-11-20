@@ -39,28 +39,28 @@ jobs:
           curl -Lfo fftw_src.tar.gz ${{ env.fftwlink }}
           tar xf fftw_src.tar.gz
 
-      - name: Install CUDA Toolkit
-        id: cuda-toolkit
-        uses: Jimver/cuda-toolkit@v0.2.18
-        with:
-          cuda: ${{ env.cudaversion}}
+      # - name: Install CUDA Toolkit
+      #   id: cuda-toolkit
+      #   uses: Jimver/cuda-toolkit@v0.2.18
+      #   with:
+      #     cuda: ${{ env.cudaversion}}
       
-      - name: Copy BuildCustomizations
-        shell: pwsh
-        run: |
-          Copy-Item -Path "${{ steps.cuda-toolkit.outputs.CUDA_PATH }}\extras\visual_studio_integration\MSBuildExtensions\*" -Destination "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Microsoft\VC\v170\BuildCustomizations\" -Force
-          Copy-Item -Path "${{ steps.cuda-toolkit.outputs.CUDA_PATH }}\extras\visual_studio_integration\MSBuildExtensions\*" -Destination "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Microsoft\VC\v160\BuildCustomizations\" -Force
+      # - name: Copy BuildCustomizations
+      #   shell: pwsh
+      #   run: |
+      #     Copy-Item -Path "${{ steps.cuda-toolkit.outputs.CUDA_PATH }}\extras\visual_studio_integration\MSBuildExtensions\*" -Destination "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Microsoft\VC\v170\BuildCustomizations\" -Force
+      #     Copy-Item -Path "${{ steps.cuda-toolkit.outputs.CUDA_PATH }}\extras\visual_studio_integration\MSBuildExtensions\*" -Destination "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Microsoft\VC\v160\BuildCustomizations\" -Force
 
-      - name: Compile FFTW single precision
-        shell: pwsh
-        run: |
-          Set-Location fftw-${{ env.fftwversion }} 
-          New-Item -ItemType Directory -Name build
-          Set-Location build
-          cmake .. -DCMAKE_INSTALL_PREFIX=${{ env.fftwcompileto }} -DENABLE_AVX=ON -DENABLE_AVX2=ON -DENABLE_SSE2=ON -DENABLE_THREADS=ON -DWITH_COMBINED_THREADS=ON -DENABLE_FLOAT=ON -DBUILD_SHARED_LIBS=ON -G "Visual Studio 17 2022" -T "v142" -A "x64"
-          cmake --build . --target INSTALL --config Release -- "-maxCpuCount" "-p:CL_MPCount=3"
-          Set-Location ..\..
-          Remove-Item -Path fftw-${{ env.fftwversion }} -Force -Recurse
+      # - name: Compile FFTW single precision
+      #   shell: pwsh
+      #   run: |
+      #     Set-Location fftw-${{ env.fftwversion }} 
+      #     New-Item -ItemType Directory -Name build
+      #     Set-Location build
+      #     cmake .. -DCMAKE_INSTALL_PREFIX=${{ env.fftwcompileto }} -DENABLE_AVX=ON -DENABLE_AVX2=ON -DENABLE_SSE2=ON -DENABLE_THREADS=ON -DWITH_COMBINED_THREADS=ON -DENABLE_FLOAT=ON -DBUILD_SHARED_LIBS=ON -G "Visual Studio 17 2022" -T "v142" -A "x64"
+      #     cmake --build . --target INSTALL --config Release -- "-maxCpuCount" "-p:CL_MPCount=3"
+      #     Set-Location ..\..
+      #     Remove-Item -Path fftw-${{ env.fftwversion }} -Force -Recurse
 
       - name: Configure build for amd64
         uses: ilammy/msvc-dev-cmd@v1
@@ -78,6 +78,8 @@ jobs:
           if [[ ${ver%%.*} -ge 2025 ]];then
             # turn off clovars for 2025 because some size_t loop variables can not be supported by VS openmp 2.0
             # turn off plumed for 2025 because it is not supported by VS 17
+            # patch grid.cpp omp path
+            cd ../../ && ls && patch -p0 < omp.patch
             cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH=${{ env.fftwcompileto }} -DGMX_SIMD=AVX2_256 -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release -DGMX_USE_COLVARS=NONE -DGMX_USE_PLUMED=OFF
           elif [[ ${ver%%.*} -lt 2024 ]];then
             # turn off GMX_USE_SIMD_KERNELS
