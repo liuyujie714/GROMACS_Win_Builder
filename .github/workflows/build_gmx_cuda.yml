@@ -79,7 +79,7 @@ jobs:
             # turn off clovars for 2025 because some size_t loop variables can not be supported by VS openmp 2.0
             # turn off plumed for 2025 because it is not supported by VS 17
             # patch grid.cpp omp path
-            cd ../../ && ls && patch -p0 < omp.patch
+            cd ../../ && patch -p0 < omp.patch && cd gromacs-${{ env.gmxversion }}/build
             cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH=${{ env.fftwcompileto }} -DGMX_SIMD=AVX2_256 -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release -DGMX_USE_COLVARS=NONE -DGMX_USE_PLUMED=OFF
           elif [[ ${ver%%.*} -lt 2024 ]];then
             # turn off GMX_USE_SIMD_KERNELS

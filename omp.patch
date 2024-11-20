@@ -1,0 +1,26 @@
+--- gromacs-2025.0-beta/src/gromacs/nbnxm/grid.cpp	2024-11-19 00:53:54.000000000 +0800
++++ gromacs-2025.0-beta-modified/src/gromacs/nbnxm/grid.cpp	2024-11-20 11:50:07.754215400 +0800
+@@ -1725,10 +1725,10 @@
+ 
+     // Set the bounding boxes and the interaction flags for all cells in the grid
+     numClusters_.resize(numCellsTotal_);
+-    numClustersTotal_ = 0;
++    int local_numClustersTotal = 0;
+ 
+     const int gmx_unused numThreads = gmx_omp_nthreads_get(ModuleMultiThread::Pairsearch);
+-#pragma omp parallel for num_threads(numThreads) reduction(+ : numClustersTotal_) schedule(static)
++#pragma omp parallel for num_threads(numThreads) reduction(+ : local_numClustersTotal) schedule(static)
+     for (int cell = 0; cell < numCellsTotal_; cell++)
+     {
+         const int atomOffsetCell = (cellOffset_ + cell) * numAtomsPerCell;
+@@ -1798,8 +1798,9 @@
+         }
+ 
+         numClusters_[cell] = numClustersInCell;
+-        numClustersTotal_ += numClustersInCell;
++        local_numClustersTotal += numClustersInCell;
+     }
++    numClustersTotal_ = local_numClustersTotal;
+ 
+     if (geometry_.isSimple_ && geometry_.numAtomsJCluster_ == 2 * numAtomsPerCell)
+     {
