@@ -51,9 +51,7 @@ jobs:
         uses: actions/cache@v3
         with: 
           path: "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/${{env.cudamajor}}"
-          key: ${{ runner.os }}-${{ env.cudaversion }}
-          restore-keys: |
-            ${{ runner.os }}-"cuda"-${{ env.cudaversion }}
+          key: ${{ runner.os }}-"cuda"-${{ env.cudaversion }}
 
       - name: Install CUDA Toolkit
         if: steps.cache-cuda.outputs.cache-hit != 'true'
