@@ -8,7 +8,7 @@ on:
 env:
   gmxversion: "2024.4"
   cudaversion: "12.4.1"
-  gmxcompileto: C:/Temp/gromacs_244
+  gmxcompileto: C:/Temp/gmxfiles
   fftwversion: "3.3.9"
   fftwcompileto: C:/Temp/fftw3
 
