@@ -6,9 +6,9 @@ on:
       - master
 
 env:
-  gmxversion: "2025.0-beta"
-  cudaversion: "12.5.1"
-  gmxcompileto: C:/Temp/gromacs_244
+  gmxversion: "2022.6"
+  cudaversion: "12.4.1"
+  gmxcompileto: C:/Temp/gmxfiles
   fftwversion: "3.3.10"
   fftwcompileto: C:/Temp/fftw3
 
@@ -39,7 +39,17 @@ jobs:
           curl -Lfo fftw_src.tar.gz ${{ env.fftwlink }}
           tar xf fftw_src.tar.gz
 
+      - name: Cache CUDA
+        id: cache-cuda
+        uses: actions/cache@v3
+        with: 
+          path: ${{ steps.cuda-toolkit.outputs.CUDA_PATH }}
+          key: ${{ runner.os }}-${{ env.cudaversion }}-${{ hashFiles('**/CMakeLists.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ env.cudaversion }}
+
       - name: Install CUDA Toolkit
+        if: steps.cache-cuda.outputs.cache-hit != 'true'
         id: cuda-toolkit
         uses: Jimver/cuda-toolkit@v0.2.18
         with:
