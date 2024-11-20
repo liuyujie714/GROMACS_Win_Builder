@@ -6,12 +6,12 @@ on:
       - master
 
 env:
-  gmxversion: "2023.5"
+  gmxversion: "2022.6"
   cudaversion: "12.4.1"
-  gmxcompileto: C:/Temp/gmxfiles
-  fftwversion: "3.3.10"
+  gmxcompileto: C:/Temp/gromacs_244
+  fftwversion: "3.3.9"
   fftwcompileto: C:/Temp/fftw3
- 
+
 jobs:
   Windows:
     runs-on: windows-2022
@@ -26,7 +26,6 @@ jobs:
         env:
           gmxdownloadlink: https://ftp.gromacs.org/gromacs/gromacs-${{env.gmxversion}}.tar.gz
           fftwlink: https://fftw.org/fftw-${{env.fftwversion}}.tar.gz
-          
         run: |
           curl -Lfo gromacs_src.tar.gz ${{ env.gmxdownloadlink }}
           tar xf gromacs_src.tar.gz
@@ -39,22 +38,7 @@ jobs:
           curl -Lfo fftw_src.tar.gz ${{ env.fftwlink }}
           tar xf fftw_src.tar.gz
 
-      - name: Major CUDA version
-        shell: bash
-        run: |
-          ver=${{ env.cudaversion }}
-          cudamajor=${ver%.*}
-          echo "cudamajor=${cudamajor}" >> $GITHUB_ENV
-
-      - name: Cache CUDA
-        id: cache-cuda
-        uses: actions/cache@v3
-        with: 
-          path: "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/${{env.cudamajor}}"
-          key: ${{ runner.os }}-"cuda"-${{ env.cudaversion }}
-
       - name: Install CUDA Toolkit
-        if: steps.cache-cuda.outputs.cache-hit != 'true'
         id: cuda-toolkit
         uses: Jimver/cuda-toolkit@v0.2.18
         with:
@@ -94,13 +78,15 @@ jobs:
             # turn off clovars for 2025 because some size_t loop variables can not be supported by VS openmp 2.0
             # turn off plumed for 2025 because it is not supported by VS 17
             # patch grid.cpp omp path
+            echo "gmx 2025 beta has bug and can not compile on windows!!!"
+            exit 1 # has bug of this code
             cd ../../ && patch -p0 < patch/2025-beta-omp.patch && cd gromacs-${{ env.gmxversion }}/build
             cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH=${{ env.fftwcompileto }} -DGMX_SIMD=AVX2_256 -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release -DGMX_USE_COLVARS=NONE -DGMX_USE_PLUMED=OFF
-          elif [[ ${ver%%.*} -lt 2024 ]];then
-            # turn off GMX_USE_SIMD_KERNELS
-            cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH=${{ env.fftwcompileto }} -DGMX_SIMD=AVX2_256 -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release -DGMX_USE_SIMD_KERNELS=OFF
+          elif [[ ${ver%%.*} -eq 2024 ]];then
+            cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH=${{ env.fftwcompileto }} -DGMX_SIMD=AVX2_256 -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release 
           else
-            cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH=${{ env.fftwcompileto }} -DGMX_SIMD=AVX2_256 -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release
+            # turn off GMX_USE_SIMD_KERNELS when gmx < 2024
+            cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH=${{ env.fftwcompileto }} -DGMX_SIMD=AVX2_256 -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release -DGMX_USE_SIMD_KERNELS=OFF
           fi
           sed -i 's/-MD/-MT/g' build.ninja
           ninja install -j4
@@ -108,13 +94,12 @@ jobs:
           rm -rf gromacs-${{ env.gmxversion }}
 
       - name: Copy DLLs and Test
-        shell: pwsh
+        shell: bash
         run: |
-          Copy-Item -Path "${{ steps.cuda-toolkit.outputs.CUDA_PATH }}\bin\cufft64_*.dll" -Destination "${{ env.gmxcompileto }}\bin\" -Force
-          Copy-Item -Path "${{ env.fftwcompileto }}\bin\*.dll" -Destination "${{ env.gmxcompileto }}\bin\" -Force
-          Set-Location ${{ env.gmxcompileto }}
-          Set-Location ${{ env.gmxcompileto }}\bin
-          .\gmx.exe -version
+          cp ${{ steps.cuda-toolkit.outputs.CUDA_PATH }}\bin\cufft64_*.dll  ${{ env.gmxcompileto }}\bin
+          cp ${{ env.fftwcompileto }}\bin\*.dll  ${{ env.gmxcompileto }}\bin
+          cd ${{ env.gmxcompileto }}/bin
+          ./gmx.exe -version
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
@@ -123,7 +108,7 @@ jobs:
           name: gmx_bins
           path: ${{ env.gmxcompileto }}
 
-
+          
   # refer to https://github.com/endless-sky/endless-sky/blob/master/.github/workflows/cd.yaml
   Release:
     needs: [Windows]
