@@ -39,11 +39,18 @@ jobs:
           curl -Lfo fftw_src.tar.gz ${{ env.fftwlink }}
           tar xf fftw_src.tar.gz
 
+      - name: Major CUDA version
+        shell: bash
+        run: |
+          ver=${{ env.cudaversion }}
+          cudamajor=${v%%.*}=${ver%.*}}
+          echo "cudaversion=${cudamajor}" >> $GITHUB_ENV
+
       - name: Cache CUDA
         id: cache-cuda
         uses: actions/cache@v3
         with: 
-          path: ${{ steps.cuda-toolkit.outputs.CUDA_PATH }} 
+          path: "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/${{env.cudamajor}}"
           key: ${{ runner.os }}-${{ env.cudaversion }}-${{ hashFiles('**/CMakeLists.txt') }}
           restore-keys: |
             ${{ runner.os }}-${{ env.cudaversion }}
