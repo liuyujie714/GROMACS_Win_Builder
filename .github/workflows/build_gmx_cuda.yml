@@ -6,7 +6,7 @@ on:
       - master
 
 env:
-  gmxversion: "2022.6"
+  gmxversion: "2023.5"
   cudaversion: "12.4.1"
   gmxcompileto: C:/Temp/gmxfiles
   fftwversion: "3.3.9"
