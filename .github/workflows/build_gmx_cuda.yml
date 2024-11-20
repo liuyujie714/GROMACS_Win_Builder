@@ -43,8 +43,8 @@ jobs:
         shell: bash
         run: |
           ver=${{ env.cudaversion }}
-          cudamajor=${ver%.*}}
-          echo "cudaversion=${cudamajor}" >> $GITHUB_ENV
+          cudamajor=${ver%.*}
+          echo "cudamajor=${cudamajor}" >> $GITHUB_ENV
 
       - name: Cache CUDA
         id: cache-cuda
