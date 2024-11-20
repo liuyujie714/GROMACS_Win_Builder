@@ -6,7 +6,7 @@ on:
       - master
 
 env:
-  gmxversion: "2022.6"
+  gmxversion: "2023.5"
   cudaversion: "12.4.1"
   gmxcompileto: C:/Temp/gromacs_244
   fftwversion: "3.3.9"
@@ -108,7 +108,7 @@ jobs:
           name: gmx_bins
           path: ${{ env.gmxcompileto }}
 
-          
+
   # refer to https://github.com/endless-sky/endless-sky/blob/master/.github/workflows/cd.yaml
   Release:
     needs: [Windows]
