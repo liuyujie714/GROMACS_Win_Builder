@@ -94,12 +94,13 @@ jobs:
           rm -rf gromacs-${{ env.gmxversion }}
 
       - name: Copy DLLs and Test
-        shell: bash
+        shell: pwsh
         run: |
-          cp ${{ steps.cuda-toolkit.outputs.CUDA_PATH }}\bin\cufft64_*.dll  ${{ env.gmxcompileto }}\bin
-          cp ${{ env.fftwcompileto }}\bin\*.dll  ${{ env.gmxcompileto }}\bin
-          cd ${{ env.gmxcompileto }}/bin
-          ./gmx.exe -version
+          Copy-Item -Path "${{ steps.cuda-toolkit.outputs.CUDA_PATH }}\bin\cufft64_*.dll" -Destination "${{ env.gmxcompileto }}\bin\" -Force
+          Copy-Item -Path "${{ env.fftwcompileto }}\bin\*.dll" -Destination "${{ env.gmxcompileto }}\bin\" -Force
+          Set-Location ${{ env.gmxcompileto }}
+          Set-Location ${{ env.gmxcompileto }}\bin
+          .\gmx.exe -version
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
