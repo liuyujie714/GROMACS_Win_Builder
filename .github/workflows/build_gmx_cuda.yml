@@ -6,12 +6,12 @@ on:
       - master
 
 env:
-  gmxversion: "2022.6"
+  gmxversion: "2023.5"
   cudaversion: "12.4.1"
   gmxcompileto: C:/Temp/gmxfiles
   fftwversion: "3.3.10"
   fftwcompileto: C:/Temp/fftw3
-
+ 
 jobs:
   Windows:
     runs-on: windows-2022
