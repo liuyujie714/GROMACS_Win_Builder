@@ -6,7 +6,7 @@ on:
       - master
 
 env:
-  gmxversion: "2023.5"
+  gmxversion: "2022.6"
   cudaversion: "12.4.1"
   gmxcompileto: C:/Temp/gmxfiles
   fftwversion: "3.3.10"
@@ -51,9 +51,9 @@ jobs:
         uses: actions/cache@v3
         with: 
           path: "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/${{env.cudamajor}}"
-          key: ${{ runner.os }}-${{ env.cudaversion }}-${{ hashFiles('**/CMakeLists.txt') }}
+          key: ${{ runner.os }}-${{ env.cudaversion }}
           restore-keys: |
-            ${{ runner.os }}-${{ env.cudaversion }}
+            ${{ runner.os }}-"cuda"-${{ env.cudaversion }}
 
       - name: Install CUDA Toolkit
         if: steps.cache-cuda.outputs.cache-hit != 'true'
