@@ -1,9 +1,10 @@
 name: Build Windows GROMACS
 
-on:
-  push:
-    branches:
-      - master
+# on:
+#   push:
+#     branches:
+#       - master
+
 
 env:
   gmxversion: "2022.6"
