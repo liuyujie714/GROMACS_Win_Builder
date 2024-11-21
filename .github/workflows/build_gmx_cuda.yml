@@ -37,20 +37,20 @@ jobs:
           fi
           curl -Lfo fftw_src.tar.gz ${{ env.fftwlink }}
           tar xf fftw_src.tar.gz
-          
+
       - name: Install ccache
-        shell: bash
+        shell: pwsh
         run: |
           choco install ccache
           ls -alt
-          export CCACHE_BASEDIR=${{ github.workspace }}
-          export CCACHE_DIR=${CCACHE_BASEDIR}/.ccache
-          export CCACHE_COMPRESS=true
-          export CCACHE_COMPRESSLEVEL=6
-          export CCACHE_MAXSIZE=600M
+          $env:CCACHE_BASEDIR = "${{ github.workspace }}"
+          $env:CCACHE_DIR = "$env:CCACHE_BASEDIR/.ccache"
+          $env:CCACHE_COMPRESS = "true"
+          $env:CCACHE_COMPRESSLEVEL = 6
+          $env:CCACHE_MAXSIZE = "600M"
           ccache -p
           ccache -z
-         
+    
       - name: ccache cache files
         uses: actions/cache@v4
         with:
