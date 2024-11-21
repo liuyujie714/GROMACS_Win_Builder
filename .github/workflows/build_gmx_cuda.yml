@@ -43,15 +43,10 @@ jobs:
         run: |
           choco install ccache
           $env:CCACHE_BASEDIR = "$env:GITHUB_WORKSPACE"
-          $env:CCACHE_DIR = "$env:CCACHE_BASEDIR/.ccache"
+          $env:CCACHE_DIR = "$env:CCACHE_BASEDIR\.ccache"
           $env:CCACHE_COMPRESS = "true"
           $env:CCACHE_COMPRESSLEVEL = 6
-          $env:CCACHE_MAXSIZE = "600M"
-          echo "CCACHE_BASEDIR=$env:GITHUB_WORKSPACE" >> $env:GITHUB_ENV
-          echo "CCACHE_DIR=$env:GITHUB_WORKSPACE/.ccache" >> $env:GITHUB_ENV
-          echo "CCACHE_COMPRESS=true" >> $env:GITHUB_ENV
-          echo "CCACHE_COMPRESSLEVEL=6" >> $env:GITHUB_ENV
-          echo "CCACHE_MAXSIZE=600M" >> $env:GITHUB_ENV      
+          $env:CCACHE_MAXSIZE = "600M"      
           ccache -p
           ccache -z
           ls
@@ -59,7 +54,7 @@ jobs:
       - name: ccache cache files
         uses: actions/cache@v4
         with:
-          path: .cache
+          path: .ccache
           key: ${{ runner.os }}-ccache-${{ github.sha }}
           restore-keys: ${{ runner.os }}-ccache-
         
