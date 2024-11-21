@@ -63,6 +63,7 @@ jobs:
         uses: Jimver/cuda-toolkit@v0.2.18
         with:
           cuda: ${{ env.cudaversion}}
+          sub-packages: '["nvcc", "cudart"]'
       
       - name: Copy BuildCustomizations
         shell: pwsh
