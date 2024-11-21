@@ -109,7 +109,7 @@ jobs:
       - name: Copy DLLs and Test
         shell: pwsh
         run: |
-          Copy-Item -Path "${{ steps.cuda-toolkit.outputs.CUDA_PATH }}\bin\cufft64_*.dll" -Destination "${{ env.gmxcompileto }}\bin\" -Force
+          Copy-Item -Path "${{ env.CUDA_PATH }}\bin\cufft64_*.dll" -Destination "${{ env.gmxcompileto }}\bin\" -Force
           Copy-Item -Path "${{ env.fftwcompileto }}\bin\*.dll" -Destination "${{ env.gmxcompileto }}\bin\" -Force
           Set-Location ${{ env.gmxcompileto }}
           Set-Location ${{ env.gmxcompileto }}\bin
