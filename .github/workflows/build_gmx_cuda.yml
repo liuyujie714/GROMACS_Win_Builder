@@ -49,6 +49,7 @@ jobs:
           $env:CCACHE_MAXSIZE = "600M"
           ccache -p
           ccache -z
+          pwd
     
       - name: ccache cache files
         uses: actions/cache@v4
