@@ -42,7 +42,6 @@ jobs:
         shell: pwsh
         run: |
           choco install ccache
-          ls -alt
           $env:CCACHE_BASEDIR = "${{ github.workspace }}"
           $env:CCACHE_DIR = "$env:CCACHE_BASEDIR/.ccache"
           $env:CCACHE_COMPRESS = "true"
