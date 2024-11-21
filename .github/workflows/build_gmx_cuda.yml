@@ -54,12 +54,12 @@ jobs:
           echo "CCACHE_MAXSIZE=600M" >> $env:GITHUB_ENV      
           ccache -p
           ccache -z
-          pwd
+          ls
     
       - name: ccache cache files
         uses: actions/cache@v4
         with:
-          path: ${{ env.CCACHE_DIR }}
+          path: .cache
           key: ${{ runner.os }}-ccache-${{ github.sha }}
           restore-keys: ${{ runner.os }}-ccache-
         
