@@ -39,6 +39,8 @@ jobs:
           
       - name: Install CUDA Toolkit
         run: |
+          cmake --version
+          exit
           mkdir -p "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.4"
           mkdir -p "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.4\extras"
           choco install unzip -y
