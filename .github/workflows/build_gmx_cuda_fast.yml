@@ -95,7 +95,7 @@ jobs:
             # turn off plumed for 2025 because it is not supported by VS 17
             # patch grid.cpp omp path
             echo "gmx 2025 beta of cuda has bug and can not compile on windows!!!"
-            exit 1 # has bug of this code
+            #exit 1 # has bug of this code
             cd ../../ && patch -p0 < patch/2025-beta-omp.patch && cd gromacs-${{ env.gmxversion }}/build
             cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH=${{ env.fftwcompileto }} -DGMX_SIMD=AVX2_256 -DGMX_GPU=OFF -DCMAKE_BUILD_TYPE=Release -DGMX_USE_COLVARS=NONE -DGMX_USE_PLUMED=OFF
           elif [[ ${ver%%.*} -eq 2024 ]];then
