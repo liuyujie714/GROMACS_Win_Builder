@@ -1,4 +1,4 @@
-name: Build Windows GROMACS
+name: Build Windows GROMACS with CUDA 12.4.1
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - master
 
 env:
-  gmxversion: "2022.6"
+  gmxversion: "2023.5"
   gmxcompileto: C:/Temp/gmxfiles
   fftwversion: "3.3.9"
   fftwcompileto: C:/Temp/fftw3
@@ -59,7 +59,7 @@ jobs:
           echo 'CUDA_PATH=C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.4' | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
           echo 'CUDA_PATH_V12_4=C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.4' | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
 
-      - name: Copy DLL
+      - name: Copy MSBuildExtensions
         run: |
           Copy-Item -Path "$env:CUDA_PATH\extras\visual_studio_integration\MSBuildExtensions\*" -Destination "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Microsoft\VC\v170\BuildCustomizations\" -Force
           Copy-Item -Path "$env:CUDA_PATH\extras\visual_studio_integration\MSBuildExtensions\*" -Destination "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Microsoft\VC\v160\BuildCustomizations\" -Force
