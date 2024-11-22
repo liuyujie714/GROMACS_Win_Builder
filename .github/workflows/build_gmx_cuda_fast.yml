@@ -91,9 +91,9 @@ jobs:
           choco install ninja
           ver=${{ env.gmxversion }}
           if [[ ${ver%%.*} -ge 2025 ]];then
-            # patch gpu issue in MSVC and use MSBuild + ClangCL
+            # patch openmp and gpu issue in MSVC and use MSBuild 
             cd ../../ && patch -p0 < patch/2025-beta-gpu.patch && cd gromacs-${{ env.gmxversion }}/build
-            cmake .. -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH=${{ env.fftwcompileto }} -DGMX_SIMD=AVX2_256 -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release -DGMX_USE_PLUMED=OFF -T ClangCL
+            cmake .. -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH=${{ env.fftwcompileto }} -DGMX_SIMD=AVX2_256 -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release -DGMX_USE_PLUMED=OFF -DGMX_USE_COLVARS=NONE -T "v142" -A "x64"
             cmake --build . --target INSTALL --config Release -- "-maxCpuCount" "-p:CL_MPCount=3"
           elif [[ ${ver%%.*} -eq 2024 ]];then
             cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH=${{ env.fftwcompileto }} -DGMX_SIMD=AVX2_256 -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release 
