@@ -1,0 +1,15 @@
+diff -urN --exclude build --exclude .vscode --exclude CMakeLists.txt gromacs-2025.0-beta/src/gromacs/gpu_utils/gpu_kernel_utils.h gromacs-2025.0-beta-modify/src/gromacs/gpu_utils/gpu_kernel_utils.h
+--- gromacs-2025.0-beta/src/gromacs/gpu_utils/gpu_kernel_utils.h	2024-11-19 00:53:54.000000000 +0800
++++ gromacs-2025.0-beta-modify/src/gromacs/gpu_utils/gpu_kernel_utils.h	2024-11-22 23:30:45.086504800 +0800
+@@ -63,7 +63,11 @@
+ #    error Including shared gpu kernel utilities header in unsupported build config
+ #endif
+ 
++#ifdef _MSC_VER
++#define GMX_ALWAYS_INLINE GMX_DEVICE_ATTRIBUTE __forceinline
++#else
+ #define GMX_ALWAYS_INLINE GMX_DEVICE_ATTRIBUTE __attribute__((always_inline))
++#endif
+ 
+ class Float2Wrapper
+ {

@@ -91,21 +91,20 @@ jobs:
           choco install ninja
           ver=${{ env.gmxversion }}
           if [[ ${ver%%.*} -ge 2025 ]];then
-            # turn off clovars for 2025 because some size_t loop variables can not be supported by VS openmp 2.0
-            # turn off plumed for 2025 because it is not supported by VS 17
-            # patch grid.cpp omp path
-            echo "gmx 2025 beta of cuda has bug and can not compile on windows!!!"
-            #exit 1 # has bug of this code
-            cd ../../ && patch -p0 < patch/2025-beta-omp.patch && cd gromacs-${{ env.gmxversion }}/build
-            cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH=${{ env.fftwcompileto }} -DGMX_SIMD=AVX2_256 -DGMX_GPU=OFF -DCMAKE_BUILD_TYPE=Release -DGMX_USE_COLVARS=NONE -DGMX_USE_PLUMED=OFF
+            # patch gpu issue in MSVC and use MSBuild + ClangCL
+            cd ../../ && patch -p0 < patch/2025-beta-gpu.patch && cd gromacs-${{ env.gmxversion }}/build
+            cmake .. -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH=${{ env.fftwcompileto }} -DGMX_SIMD=AVX2_256 -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release -DGMX_USE_PLUMED=OFF -T ClangCL
+            cmake --build . --target INSTALL --config Release -- "-maxCpuCount" "-p:CL_MPCount=3"
           elif [[ ${ver%%.*} -eq 2024 ]];then
             cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH=${{ env.fftwcompileto }} -DGMX_SIMD=AVX2_256 -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release 
+            sed -i 's/-MD/-MT/g' build.ninja
+            ninja install -j4
           else
             # turn off GMX_USE_SIMD_KERNELS when gmx < 2024
             cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH=${{ env.fftwcompileto }} -DGMX_SIMD=AVX2_256 -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release -DGMX_USE_SIMD_KERNELS=OFF 
+            sed -i 's/-MD/-MT/g' build.ninja
+            ninja install -j4
           fi
-          sed -i 's/-MD/-MT/g' build.ninja
-          ninja install -j4
           cd ../../
           rm -rf gromacs-${{ env.gmxversion }}
 
