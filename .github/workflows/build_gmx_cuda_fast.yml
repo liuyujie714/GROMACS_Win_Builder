@@ -26,8 +26,6 @@ jobs:
           gmxdownloadlink: https://ftp.gromacs.org/gromacs/gromacs-${{env.gmxversion}}.tar.gz
           fftwlink: https://fftw.org/fftw-${{env.fftwversion}}.tar.gz
         run: |
-          which cmake
-          exit
           curl -Lfo gromacs_src.tar.gz ${{ env.gmxdownloadlink }}
           tar xf gromacs_src.tar.gz
           sed -i 's/${CMAKE_CXX17_STANDARD_COMPILE_OPTION}/-std c++17/g' "gromacs-${{ env.gmxversion }}/cmake/gmxManageNvccConfig.cmake"
@@ -95,6 +93,9 @@ jobs:
           if [[ ${ver%%.*} -ge 2025 ]];then
             # patch openmp and gpu issue in MSVC and use MSBuild 
             cd ../../ && patch -p0 < patch/2025-beta-gpu.patch && cd gromacs-${{ env.gmxversion }}/build
+            # cmake 3.30 has bug for gmx2025
+            pip install cmake==3.28
+            which cmake
             cmake .. -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH=${{ env.fftwcompileto }} -DGMX_SIMD=AVX2_256 -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release -DGMX_USE_PLUMED=OFF -DGMX_USE_COLVARS=NONE -T "v142" -A "x64"
             cmake --build . --target INSTALL --config Release -- "-maxCpuCount" "-p:CL_MPCount=3"
           elif [[ ${ver%%.*} -eq 2024 ]];then
