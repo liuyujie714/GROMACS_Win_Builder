@@ -104,7 +104,7 @@ jobs:
             cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH=${{ env.fftwcompileto }} -DGMX_SIMD=AVX2_256 -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release -DGMX_USE_SIMD_KERNELS=OFF 
           fi
           sed -i 's/-MD/-MT/g' build.ninja
-          ninja install -j4
+          ninja install -j4 || ninja install -j1
           cd ../../
           rm -rf gromacs-${{ env.gmxversion }}
 
