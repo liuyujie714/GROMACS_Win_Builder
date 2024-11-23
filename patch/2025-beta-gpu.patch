@@ -40,6 +40,11 @@
  {
 --- gromacs-2025.0-beta/src/gromacs/mdlib/lincs_gpu.cpp	2024-11-19 00:53:54.000000000 +0800
 +++ gromacs-2025.0-beta-modify/src/gromacs/mdlib/lincs_gpu.cpp	2024-11-22 23:30:45.086504800 +0800
-@@ -321,1 +321,0 @@
+@@ -319,7 +319,6 @@
+     // in the constraints array due to the GPU block borders. This number can be adjusted to improve
+     // memory access pattern. Mass factors are saved in a similar data structure.
+     const int prevMaxCoupledConstraints = maxCoupledConstraints_;
 -#pragma omp parallel for num_threads(numOmpThreads) schedule(static) reduction(max : maxCoupledConstraints_)
-
+     for (int c = 0; c < numConstraints; c++)
+     {
+         int a1 = iatoms[stride * c + 1];
