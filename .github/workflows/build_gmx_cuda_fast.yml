@@ -6,7 +6,7 @@ on:
       - master
 
 env:
-  gmxversion: "2025.0-beta"
+  gmxversion: "2019.6"
   gmxcompileto: C:/Temp/gmxfiles
   fftwversion: "3.3.9"
   fftwcompileto: C:/Temp/fftw3
@@ -99,9 +99,11 @@ jobs:
             cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH=${{ env.fftwcompileto }} -DGMX_SIMD=AVX2_256 -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release -DGMX_USE_PLUMED=OFF -DGMX_USE_COLVARS=NONE
           elif [[ ${ver%%.*} -eq 2024 ]];then
             cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH=${{ env.fftwcompileto }} -DGMX_SIMD=AVX2_256 -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release 
-          else
-            # turn off GMX_USE_SIMD_KERNELS when gmx < 2024
+          elif [[ ${ver%%.*} -ge 2021 ]];then
+            # turn off GMX_USE_SIMD_KERNELS when 2021 <= gmx < 2024
             cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH=${{ env.fftwcompileto }} -DGMX_SIMD=AVX2_256 -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release -DGMX_USE_SIMD_KERNELS=OFF 
+          else
+            cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH=${{ env.fftwcompileto }} -DGMX_SIMD=AVX2_256 -DGMX_GPU=ON -DCMAKE_BUILD_TYPE=Release
           fi
           sed -i 's/-MD/-MT/g' build.ninja
           ninja install -j4 || ninja install -j1
