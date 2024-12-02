@@ -111,6 +111,7 @@ jobs:
           tar xf fftw_src.tar.gz
 
       - name: Compile FFTW single precision
+        if: steps.cache-fftw.outputs.cache-hit != 'true'
         shell: pwsh
         run: |
           Set-Location fftw-${{ env.fftwversion }} 
@@ -131,11 +132,13 @@ jobs:
         shell: pwsh
         if: ${{ success() }}
         run: |
+          $env:PATH = "${{env.adcppto}}\bin;$env:PATH"
+
           Set-Location gromacs-${{ env.gmxversion }}
           mkdir build 
           Set-Location build
 
-          cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH="${{env.adcppto}};${{ env.fftwcompileto }};${{env.ROCM_PATH}};$env:GITHUB_WORKSPACE\llvm" -DGMX_SIMD=AVX2_256 -DGMX_GPU=SYCL -DGMX_SYCL_HIPSYCL=ON -DHIPSYCL_TARGETS="hip:gfx1100" -DCMAKE_C_COMPILER="$env:GITHUB_WORKSPACE\llvm\bin\clang.exe" -DCMAKE_CXX_COMPILER="$env:GITHUB_WORKSPACE\llvm\bin\clang++.exe" -DCMAKE_BUILD_TYPE=Release 
+          cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH="${{env.adcppto}};${{ env.fftwcompileto }};${{env.ROCM_PATH}};$env:GITHUB_WORKSPACE\llvm" -DAdaptiveCpp_DIR="${{env.adcppto}}\lib\cmake\AdaptiveCpp" -DGMX_SIMD=AVX2_256 -DGMX_GPU=SYCL -DGMX_SYCL_HIPSYCL=ON -DHIPSYCL_TARGETS="hip:gfx1100" -DCMAKE_C_COMPILER="$env:GITHUB_WORKSPACE\llvm\bin\clang.exe" -DCMAKE_CXX_COMPILER="$env:GITHUB_WORKSPACE\llvm\bin\clang++.exe" -DCMAKE_BUILD_TYPE=Release 
 
           sed -i 's/-MD/-MT/g' build.ninja
           ninja install -j4; if (-not $?) { ninja install -j1 }
