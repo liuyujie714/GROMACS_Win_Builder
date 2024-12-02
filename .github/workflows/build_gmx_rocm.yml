@@ -36,13 +36,6 @@ jobs:
           path: ${{env.fftwcompileto}}
           key: ${{runner.os}}-fftw3.3.9
 
-      - name: Cache LLVM 17
-        id: cache-llvm
-        uses: actions/cache@v4
-        with:
-          path: ${{github.workspace}}/llvm
-          key: ${{runner.os}}-llvm-17
-
       - name: Cache ROCM 6.1
         id: cache-rocm
         uses: actions/cache@v4
@@ -54,31 +47,7 @@ jobs:
         run: |
           choco install ninja wget sed
 
-      - name: Install MinGW LLVM 17
-        if: steps.cache-llvm.outputs.cache-hit != 'true'
-        shell: powershell
-        run: |
-          $llvmURL = "https://github.com/mstorsjo/llvm-mingw/releases/download/20231128/llvm-mingw-20231128-msvcrt-x86_64.zip"
-          $llvmFolderName = $llvmUrl.Split("/")[-1].Split(".")[0]
-          Invoke-WebRequest $llvmURL -OutFile $env:GITHUB_WORKSPACE\llvm.zip
-          Expand-Archive $env:GITHUB_WORKSPACE\llvm.zip
-          Move-Item $env:GITHUB_WORKSPACE\llvm\$llvmFolderName\* $env:GITHUB_WORKSPACE\llvm
-          Remove-Item $env:GITHUB_WORKSPACE\llvm\$llvmFolderName
-     
-      - name: Build boost
-        if: steps.cache-boost.outputs.cache-hit != 'true'
-        shell: powershell
-        run: |
-          $env:PATH = "$env:GITHUB_WORKSPACE\llvm\bin;$env:PATH"
-          $boostURL = "https://boostorg.jfrog.io/artifactory/main/release/1.81.0/source/boost_1_81_0.7z"
-          $boostFolderName = $boostUrl.Split("/")[-1].Split(".")[0]
-          Invoke-WebRequest $boostURL -OutFile boost.7z
-          7z.exe x boost.7z
-          cd $boostFolderName
-          .\bootstrap.bat clang
-          .\b2.exe --with-context --with-fiber --with-atomic --with-filesystem --with-test toolset=clang address-model=64 variant=release --build-type=complete stage
-
-      - name: Install ROCM HIP SDK
+      - name: Install ROCM 6.1 HIP SDK & Clang 19
         if: steps.cache-rocm.outputs.cache-hit != 'true'
         run: |
           Get-ComputerInfo | Format-Table CsSystemType,OSName,OSDisplayVersion
@@ -87,11 +56,24 @@ jobs:
           Start-Process setup.exe -ArgumentList '-install' -NoNewWindow -Wait
           mkdir "${{env.ROCM_PATH}}"
           Move-Item -Path "C:\Program Files\AMD\ROCm\6.1\*" -Destination "${{env.ROCM_PATH}}" -Force
-      
+
+      - name: Build boost
+        if: steps.cache-boost.outputs.cache-hit != 'true'
+        shell: powershell
+        run: |
+          $env:PATH = "${{env.ROCM_PATH}}\bin;$env:PATH"
+          $boostURL = "https://boostorg.jfrog.io/artifactory/main/release/1.81.0/source/boost_1_81_0.7z"
+          $boostFolderName = $boostUrl.Split("/")[-1].Split(".")[0]
+          Invoke-WebRequest $boostURL -OutFile boost.7z
+          7z.exe x boost.7z
+          cd $boostFolderName
+          .\bootstrap.bat clang
+          .\b2.exe --with-context --with-fiber --with-atomic --with-filesystem --with-test toolset=clang address-model=64 variant=release --build-type=complete stage
+
       - name: Build AdaptiveCpp
         shell: pwsh
         run: |
-           $env:PATH = "$env:GITHUB_WORKSPACE\llvm\bin;$env:PATH"
+           $env:PATH = "${{env.ROCM_PATH}}\bin;$env:PATH"
            wget https://github.com/AdaptiveCpp/AdaptiveCpp/archive/refs/tags/v24.06.0.tar.gz
            tar -xf v24.06.0.tar.gz 
            Set-Location AdaptiveCpp-24.06.0
