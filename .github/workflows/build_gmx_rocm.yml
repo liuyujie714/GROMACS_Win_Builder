@@ -136,7 +136,7 @@ jobs:
         shell: pwsh
         if: ${{ success() }}
         run: |
-          $env:PATH = "${{env.ROCM_PATH}}\bin;$env:PATH"
+          dumpbin /dependents "${{ env.adcppto }}\bin\libacpp-rt.dll"
           Set-Location gromacs-${{ env.gmxversion }}
           mkdir build 
           Set-Location build
