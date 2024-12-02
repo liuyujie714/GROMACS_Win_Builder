@@ -6,7 +6,7 @@ on:
       - master
 
 env:
-  gmxversion: "2019.6"
+  gmxversion: "2024.4"
   gmxcompileto: C:/Temp/gmxfiles
   fftwversion: "3.3.9"
   fftwcompileto: C:/Temp/fftw3
@@ -34,4 +34,7 @@ jobs:
       - name: Install ROCM HIP SDK
         run: |
           Get-ComputerInfo | Format-Table CsSystemType,OSName,OSDisplayVersion
+          curl -Lfo setup.exe https://download.amd.com/developer/eula/rocm-hub/AMD-Software-PRO-Edition-24.Q3-WinSvr2022-For-HIP.exe
+          Start-Process setup.exe -ArgumentList '-install','-log',"${env:USERPROFILE}\installer_log.txt" -NoNewWindow -Wait
+          
 
