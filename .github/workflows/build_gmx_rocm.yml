@@ -1,0 +1,38 @@
+name: Build Windows GROMACS with CUDA 12.4.1
+
+on:
+  push:
+    branches:
+      - master
+
+env:
+  gmxversion: "2019.6"
+  gmxcompileto: C:/Temp/gmxfiles
+  fftwversion: "3.3.9"
+  fftwcompileto: C:/Temp/fftw3
+
+jobs:
+  Windows:
+    runs-on: windows-2022
+
+    if: github.event.repository.owner.id == github.event.sender.id
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Download Gromacs and FFTW
+        shell: bash
+        env:
+          gmxdownloadlink: https://ftp.gromacs.org/gromacs/gromacs-${{env.gmxversion}}.tar.gz
+          fftwlink: https://fftw.org/fftw-${{env.fftwversion}}.tar.gz
+        run: |
+          curl -Lfo gromacs_src.tar.gz ${{ env.gmxdownloadlink }}
+          tar xf gromacs_src.tar.gz
+          curl -Lfo fftw_src.tar.gz ${{ env.fftwlink }}
+          tar xf fftw_src.tar.gz
+          
+      - name: Install ROCM HIP SDK
+        run: |
+          choco install rocm-hip-sdk
+          Get-ComputerInfo | Format-Table CsSystemType,OSName,OSDisplayVersion
+          
