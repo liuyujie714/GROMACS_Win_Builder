@@ -135,7 +135,7 @@ jobs:
           mkdir build 
           Set-Location build
 
-          cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH="${{ env.fftwcompileto }};${{env.ROCM_PATH}};$env:GITHUB_WORKSPACE\llvm" -DGMX_SIMD=AVX2_256 -DGMX_GPU=SYCL -DGMX_SYCL_HIPSYCL=ON -DHIPSYCL_TARGETS="hip:gfx1100" -DCMAKE_C_COMPILER="$env:GITHUB_WORKSPACE\llvm\bin\clang.exe" -DCMAKE_CXX_COMPILER="$env:GITHUB_WORKSPACE\llvm\bin\clang++.exe" -DCMAKE_BUILD_TYPE=Release 
+          cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH="${{env.adcppto}};${{ env.fftwcompileto }};${{env.ROCM_PATH}};$env:GITHUB_WORKSPACE\llvm" -DGMX_SIMD=AVX2_256 -DGMX_GPU=SYCL -DGMX_SYCL_HIPSYCL=ON -DHIPSYCL_TARGETS="hip:gfx1100" -DCMAKE_C_COMPILER="$env:GITHUB_WORKSPACE\llvm\bin\clang.exe" -DCMAKE_CXX_COMPILER="$env:GITHUB_WORKSPACE\llvm\bin\clang++.exe" -DCMAKE_BUILD_TYPE=Release 
 
           sed -i 's/-MD/-MT/g' build.ninja
           ninja install -j4; if (-not $?) { ninja install -j1 }
