@@ -38,22 +38,17 @@ jobs:
           curl -Lfo setup.exe https://download.amd.com/developer/eula/rocm-hub/AMD-Software-PRO-Edition-24.Q3-WinSvr2022-For-HIP.exe
           Start-Process setup.exe -ArgumentList '-install','-log',"${env:USERPROFILE}\installer_log.txt" -NoNewWindow -Wait
 
-          dir "${{env.ROCM_PATH}}"
-          
-
-
       - name: Build ROCM GROMACS
         shell: pwsh
         if: ${{ success() }}
         run: |
-          dir "${{env.ROCM_PATH}}\bin"
           choco install ninja sed
 
           Set-Location gromacs-${{ env.gmxversion }}
           mkdir build 
           Set-Location build
 
-          cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH=${{ env.fftwcompileto }};"${{env.ROCM_PATH}}" -DGMX_SIMD=AVX2_256 -DGMX_GPU=SYCL -DGMX_SYCL_HIPSYCL=ON -DHIPSYCL_TARGETS="hip:gfx1100" -DCMAKE_C_COMPILER="" -DCMAKE_CXX_COMPILER="" -DCMAKE_BUILD_TYPE=Release 
+          cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH=${{ env.fftwcompileto }};"${{env.ROCM_PATH}}" -DGMX_SIMD=AVX2_256 -DGMX_GPU=SYCL -DGMX_SYCL_HIPSYCL=ON -DHIPSYCL_TARGETS="hip:gfx1100" -DCMAKE_C_COMPILER="${{env.ROCM_PATH}}\..\llvm\bin\clang" -DCMAKE_CXX_COMPILER="${{env.ROCM_PATH}}\..\llvm\bin\clang++" -DCMAKE_BUILD_TYPE=Release 
 
           sed -i 's/-MD/-MT/g' build.ninja
           ninja install -j4; if (-not $?) { ninja install -j1 }
