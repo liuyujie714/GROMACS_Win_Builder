@@ -36,5 +36,18 @@ jobs:
           Get-ComputerInfo | Format-Table CsSystemType,OSName,OSDisplayVersion
           curl -Lfo setup.exe https://download.amd.com/developer/eula/rocm-hub/AMD-Software-PRO-Edition-24.Q3-WinSvr2022-For-HIP.exe
           Start-Process setup.exe -ArgumentList '-install','-log',"${env:USERPROFILE}\installer_log.txt" -NoNewWindow -Wait
-          
+
+      - name: Build ROCM GROMACS
+        shell: bash
+        if: ${{ success() }}
+        run: |
+          cd gromacs-${{ env.gmxversion }} && mkdir build && cd build
+          cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH="${{ env.fftwcompileto }}" -DGMX_SIMD=AVX2_256 -DGMX_GPU=SYCL -DGMX_SYCL_HIPSYCL=ON -DHIPSYCL_TARGETS="hip:gfx1100" -DCMAKE_C_COMPILER="" -DCMAKE_CXX_COMPILER="" -DCMAKE_BUILD_TYPE=Release 
+
+          sed -i 's/-MD/-MT/g' build.ninja
+          ninja install -j4 || ninja install -j1
+
+          cd ../../
+          rm -rf gromacs-${{ env.gmxversion }}
+
 
