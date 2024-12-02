@@ -134,8 +134,6 @@ jobs:
         shell: pwsh
         if: ${{ success() }}
         run: |
-          $env:PATH = "${{env.adcppto}}\bin;$env:PATH"
-
           Set-Location gromacs-${{ env.gmxversion }}
           mkdir build 
           Set-Location build
