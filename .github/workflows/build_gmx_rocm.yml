@@ -97,7 +97,7 @@ jobs:
            Set-Location AdaptiveCpp-24.06.0
            md build
            cd build
-           cmake .. -G Ninja -DBUILD_CLANG_PLUGIN=ON -DLLVM_DIR="${{github.workspace}}\llvm" -DCMAKE_C_COMPILER=clang  -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_INSTALL_PREFIX=${{ env.adcppto }} -DBOOST_ROOT="$env:GITHUB_WORKSPACE/boost_1_81_0" -DBoost_COMPILER=-clang18 -DBoost_ARCHITECTURE=-x64 -DCMAKE_BUILD_TYPE=Release 
+           cmake .. -G Ninja -DBUILD_CLANG_PLUGIN=ON -DCMAKE_INCLUDE_PATH=${{env.ROCM_PATH}}\lib\clang\19\include" -DLLVM_DIR="${{github.workspace}}\llvm" -DCMAKE_C_COMPILER=clang  -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_INSTALL_PREFIX=${{ env.adcppto }} -DBOOST_ROOT="$env:GITHUB_WORKSPACE/boost_1_81_0" -DBoost_COMPILER=-clang18 -DBoost_ARCHITECTURE=-x64 -DCMAKE_BUILD_TYPE=Release 
            ninja install -j4
 
            #Copy-Item -Path "${{ env.adcppto }}\bin\libacpp-rt.dll" -Destination "${{ env.adcppto }}\bin\acpp-clang.dll"
