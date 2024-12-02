@@ -33,6 +33,5 @@ jobs:
           
       - name: Install ROCM HIP SDK
         run: |
-          choco install rocm-hip-sdk
           Get-ComputerInfo | Format-Table CsSystemType,OSName,OSDisplayVersion
-          
+
