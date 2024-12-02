@@ -9,7 +9,7 @@ env:
   gmxversion: "2024.4"
   gmxcompileto: C:/Temp/gmxfiles
   fftwversion: "3.3.9"
-  fftwcompileto: C:/Temp/fftw3
+  fftwcompileto: C:/fftw3
   adcppto: C:/Temp/adcpp
   ROCM_PATH: C:\Program Files\AMD\ROCm\6.1
 
@@ -28,6 +28,13 @@ jobs:
         with:
           path: ${{github.workspace}}/boost_1_81_0
           key: ${{runner.os}}-boost1810
+
+      - name: Cache FFTW3
+        id: cache-fftw
+        uses: actions/cache@v4
+        with:
+          path: ${{env.fftwcompileto}}
+          key: ${{runner.os}}-fftw3.3.9
 
       - name: Cache LLVM 17
         id: cache-llvm
@@ -78,7 +85,6 @@ jobs:
           curl -Lfo setup.exe https://download.amd.com/developer/eula/rocm-hub/AMD-Software-PRO-Edition-24.Q3-WinSvr2022-For-HIP.exe
           Start-Process setup.exe -ArgumentList '-install' -NoNewWindow -Wait
       
-
       - name: Build AdaptiveCpp
         shell: pwsh
         run: |
@@ -103,6 +109,17 @@ jobs:
           tar xf gromacs_src.tar.gz
           curl -Lfo fftw_src.tar.gz ${{ env.fftwlink }}
           tar xf fftw_src.tar.gz
+
+      - name: Compile FFTW single precision
+        shell: pwsh
+        run: |
+          Set-Location fftw-${{ env.fftwversion }} 
+          New-Item -ItemType Directory -Name build
+          Set-Location build
+          cmake .. -DCMAKE_INSTALL_PREFIX=${{ env.fftwcompileto }} -DENABLE_AVX=ON -DENABLE_AVX2=ON -DENABLE_SSE2=ON -DENABLE_THREADS=ON -DWITH_COMBINED_THREADS=ON -DENABLE_FLOAT=ON -DBUILD_SHARED_LIBS=ON -G "Visual Studio 17 2022" -T "v142" -A "x64"
+          cmake --build . --target INSTALL --config Release -- "-maxCpuCount" "-p:CL_MPCount=3"
+          Set-Location ..\..
+          Remove-Item -Path fftw-${{ env.fftwversion }} -Force -Recurse
 
       - name: Configure build for amd64
         uses: ilammy/msvc-dev-cmd@v1
