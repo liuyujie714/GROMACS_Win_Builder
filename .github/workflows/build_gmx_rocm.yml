@@ -33,7 +33,7 @@ jobs:
             
       - name: Download dependencies
         run: |
-          choco install ninja tar wget
+          choco install ninja wget
 
       - name: Configure build for amd64
         uses: ilammy/msvc-dev-cmd@v1
@@ -46,7 +46,6 @@ jobs:
         env:
           BOOST_ROOT: ${{ steps.boost.outputs.BOOST_ROOT }}
         run: |
-          choco install wget tar ninja
           wget https://github.com/AdaptiveCpp/AdaptiveCpp/archive/refs/tags/v24.06.0.tar.gz
           tar -xf v24.06.0.tar.gz 
           Set-Location AdaptiveCpp-24.06.0
