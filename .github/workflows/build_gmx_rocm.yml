@@ -26,7 +26,7 @@ jobs:
         uses: MarkusJx/install-boost@v2.4.4
         id: boost
         with:
-            boost_version: 1.72.0
+            boost_version: 1.75.0
             platform_version: 2019
             # install to C:\boost
             boost_install_dir: C:\
