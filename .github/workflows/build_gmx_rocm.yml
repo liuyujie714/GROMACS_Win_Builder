@@ -70,6 +70,13 @@ jobs:
           cd $boostFolderName
           .\bootstrap.bat clang
           .\b2.exe --with-context --with-fiber --with-atomic --with-filesystem --with-test toolset=clang address-model=64 variant=release --build-type=complete stage
+
+      - name: Install ROCM HIP SDK
+        if: steps.cache-rocm.outputs.cache-hit != 'true'
+        run: |
+          Get-ComputerInfo | Format-Table CsSystemType,OSName,OSDisplayVersion
+          curl -Lfo setup.exe https://download.amd.com/developer/eula/rocm-hub/AMD-Software-PRO-Edition-24.Q3-WinSvr2022-For-HIP.exe
+          Start-Process setup.exe -ArgumentList -install -log "${env:USERPROFILE}\installer_log.txt" -NoNewWindow -Wait
       
       - name: Build AdaptiveCpp
         shell: pwsh
@@ -101,13 +108,6 @@ jobs:
       #   with:
       #     arch: amd64
       #     toolset: 14.29
-
-      # - name: Install ROCM HIP SDK
-      #   if: steps.cache-rocm.outputs.cache-hit != 'true'
-      #   run: |
-      #     Get-ComputerInfo | Format-Table CsSystemType,OSName,OSDisplayVersion
-      #     curl -Lfo setup.exe https://download.amd.com/developer/eula/rocm-hub/AMD-Software-PRO-Edition-24.Q3-WinSvr2022-For-HIP.exe
-      #     Start-Process setup.exe -ArgumentList -install -log "${env:USERPROFILE}\installer_log.txt" -NoNewWindow -Wait
 
       # - name: Build ROCM GROMACS
       #   shell: pwsh
