@@ -97,7 +97,7 @@ jobs:
            cmake .. -G Ninja -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_INSTALL_PREFIX=${{ env.adcppto }} -DBOOST_ROOT="$env:GITHUB_WORKSPACE/boost_1_81_0" -DBoost_COMPILER=-clang17 -DBoost_ARCHITECTURE=-x64 -DCMAKE_BUILD_TYPE=Release 
            ninja install
 
-           Copy-Item -Path "${{ env.adcppto }}\bin\libacpp-rt.dll" -Destination "${{ env.gmxcompileto }}\bin\acpp-clang.dll"
+           Copy-Item -Path "${{ env.adcppto }}\bin\libacpp-rt.dll" -Destination "${{ env.gmxcompileto }}\bin\"
            Set-Location ../..
 
       - name: Download Gromacs and FFTW
