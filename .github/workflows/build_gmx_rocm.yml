@@ -41,7 +41,7 @@ jobs:
           Set-Location AdaptiveCpp-24.06.0
           mkdir build
           Set-Location build
-          cmake .. -G Ninja -DBOOST_ROOT=${{env.BOOST_ROOT}} -DCMAKE_INSTALL_PREFIX=${{ env.adcppto}} -DCMAKE_BUILD_TYPE=Release  -DCMAKE_PREFIX_PATH="C:\Program Files\LLVM" -DCMAKE_C_COMPILER="C:\Program Files\LLVM\bin\clang.exe" -DCMAKE_CXX_COMPILER="C:\Program Files\LLVM\bin\clang++.exe"
+          cmake .. -G Ninja  -DBoost_INCLUDE_DIR="${{steps.boost.outputs.BOOST_ROOT}}\include" -DBoost_LIBRARY_DIR="${{steps.boost.outputs.BOOST_ROOT}}\lib" -DCMAKE_INSTALL_PREFIX=${{ env.adcppto}} -DCMAKE_BUILD_TYPE=Release  -DCMAKE_PREFIX_PATH="C:\Program Files\LLVM" -DCMAKE_C_COMPILER="C:\Program Files\LLVM\bin\clang.exe" -DCMAKE_CXX_COMPILER="C:\Program Files\LLVM\bin\clang++.exe"
           ninja install -j4
 
           Set-Location ../..     
