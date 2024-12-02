@@ -37,7 +37,7 @@ jobs:
           curl -Lfo setup.exe https://download.amd.com/developer/eula/rocm-hub/AMD-Software-PRO-Edition-24.Q3-WinSvr2022-For-HIP.exe
           Start-Process setup.exe -ArgumentList '-install','-log',"${env:USERPROFILE}\installer_log.txt" -NoNewWindow -Wait
           
-          dir ${env:HIP_PATH}
+          dir "C:\Program Files\AMD\ROCm\*"
 
 
       - name: Build ROCM GROMACS
@@ -45,6 +45,7 @@ jobs:
         if: ${{ success() }}
         run: |
           cd gromacs-${{ env.gmxversion }} && mkdir build && cd build
+          choco install ninja
           cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH="${{ env.fftwcompileto }}" -DGMX_SIMD=AVX2_256 -DGMX_GPU=SYCL -DGMX_SYCL_HIPSYCL=ON -DHIPSYCL_TARGETS="hip:gfx1100" -DCMAKE_C_COMPILER="" -DCMAKE_CXX_COMPILER="" -DCMAKE_BUILD_TYPE=Release 
 
           sed -i 's/-MD/-MT/g' build.ninja
@@ -56,7 +57,7 @@ jobs:
       - name: Copy DLLs and Test
         shell: pwsh
         run: |
-          Copy-Item -Path "${{ env.HIP_PATH }}\bin\cufft64_*.dll" -Destination "${{ env.gmxcompileto }}\bin\" -Force
+          Copy-Item -Path "${{ env.HIP_PATH }}\bin\amdhip64_*.dll" -Destination "${{ env.gmxcompileto }}\bin\" -Force
           Copy-Item -Path "${{ env.fftwcompileto }}\bin\*.dll" -Destination "${{ env.gmxcompileto }}\bin\" -Force
           Set-Location ${{ env.gmxcompileto }}
           Set-Location ${{ env.gmxcompileto }}\bin
