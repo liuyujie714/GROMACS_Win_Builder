@@ -22,18 +22,62 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
 
-      - name: Install boost
-        uses: MarkusJx/install-boost@v2.4.4
-        id: boost
+      - name: Cache Boost
+        id: cache-boost
+        uses: actions/cache@v4
         with:
-            boost_version: 1.75.0
-            platform_version: 2019
-            # install to C:\boost
-            boost_install_dir: C:\
+          path: ${{github.workspace}}/boost_1_81_0
+          key: ${{runner.os}}-boost1810
+
+      - name: Cache LLVM ${{matrix.clang}}
+        id: cache-llvm
+        uses: actions/cache@v4
+        with:
+          path: ${{github.workspace}}/llvm
+          key: ${{runner.os}}-llvm-17
             
       - name: Download dependencies
         run: |
           choco install ninja wget
+
+      - name: Install MinGW LLVM ${{matrix.clang}}
+        if: steps.cache-llvm.outputs.cache-hit != 'true'
+        shell: powershell
+        run: |
+          $llvmURL = "https://github.com/mstorsjo/llvm-mingw/releases/download/20231128/llvm-mingw-20231128-msvcrt-x86_64.zip"
+          $llvmFolderName = $llvmUrl.Split("/")[-1].Split(".")[0]
+          Invoke-WebRequest $llvmURL -OutFile $env:GITHUB_WORKSPACE\llvm.zip
+          Expand-Archive $env:GITHUB_WORKSPACE\llvm.zip
+          Move-Item $env:GITHUB_WORKSPACE\llvm\$llvmFolderName\* $env:GITHUB_WORKSPACE\llvm
+          Remove-Item $env:GITHUB_WORKSPACE\llvm\$llvmFolderName
+     
+      - name: Build boost
+        if: steps.cache-boost.outputs.cache-hit != 'true'
+        shell: powershell
+        run: |
+          $env:PATH = "$env:GITHUB_WORKSPACE\llvm\bin;$env:PATH"
+          $boostURL = "https://boostorg.jfrog.io/artifactory/main/release/1.81.0/source/boost_1_81_0.7z"
+          $boostFolderName = $boostUrl.Split("/")[-1].Split(".")[0]
+          Invoke-WebRequest $boostURL -OutFile boost.7z
+          7z.exe x boost.7z
+          cd $boostFolderName
+          .\bootstrap.bat clang
+          .\b2.exe --with-context --with-fiber --with-atomic --with-filesystem --with-test toolset=clang address-model=64 variant=release --build-type=complete stage
+      
+      - name: Build AdaptiveCpp
+        shell: powershell
+        run: |
+           $env:PATH = "$env:GITHUB_WORKSPACE\llvm\bin;$env:PATH"
+           $env:PATH = "$env:GITHUB_WORKSPACE\ninja_install;$env:PATH"
+           wget https://github.com/AdaptiveCpp/AdaptiveCpp/archive/refs/tags/v24.06.0.tar.gz
+           tar -xf v24.06.0.tar.gz 
+           Set-Location AdaptiveCpp-24.06.0
+           md build
+           cd build
+           cmake .. -G Ninja -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_INSTALL_PREFIX=${{ env.adcppto}} -DBOOST_ROOT="$env:GITHUB_WORKSPACE/boost_1_81_0" -DBoost_COMPILER=-clang17 -DBoost_ARCHITECTURE=-x64
+           ninja install
+
+           Set-Location ../..
 
       - name: Configure build for amd64
         uses: ilammy/msvc-dev-cmd@v1
@@ -41,20 +85,6 @@ jobs:
           arch: amd64
           # must use v142 to avoid compile errors for ninja about calc_verletbuf.cpp code
           toolset: 14.29
-
-      - name: Install AdaptiveCpp
-        env:
-          BOOST_ROOT: ${{ steps.boost.outputs.BOOST_ROOT }}
-        run: |
-          wget https://github.com/AdaptiveCpp/AdaptiveCpp/archive/refs/tags/v24.06.0.tar.gz
-          tar -xf v24.06.0.tar.gz 
-          Set-Location AdaptiveCpp-24.06.0
-          mkdir build
-          Set-Location build
-          cmake .. -G Ninja  -DBoost_INCLUDE_DIR="${{steps.boost.outputs.BOOST_ROOT}}\include" -DBoost_LIBRARY_DIR="${{steps.boost.outputs.BOOST_ROOT}}\lib" -DCMAKE_INSTALL_PREFIX=${{ env.adcppto}} -DCMAKE_BUILD_TYPE=Release 
-          ninja install -j4
-
-          Set-Location ../..     
 
       - name: Download Gromacs and FFTW
         shell: bash
@@ -83,9 +113,7 @@ jobs:
           mkdir build 
           Set-Location build
 
-          dir "C:\Program Files\LLVM\bin"
-
-          cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH="${{ env.fftwcompileto }};${{env.ROCM_PATH}};C:\Program Files\LLVM" -DGMX_SIMD=AVX2_256 -DGMX_GPU=SYCL -DGMX_SYCL_HIPSYCL=ON -DHIPSYCL_TARGETS="hip:gfx1100" -DCMAKE_C_COMPILER="C:\Program Files\LLVM\bin\clang.exe" -DCMAKE_CXX_COMPILER="C:\Program Files\LLVM\bin\clang++.exe" -DCMAKE_BUILD_TYPE=Release 
+          cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH="${{ env.fftwcompileto }};${{env.ROCM_PATH}};$env:GITHUB_WORKSPACE\llvm" -DGMX_SIMD=AVX2_256 -DGMX_GPU=SYCL -DGMX_SYCL_HIPSYCL=ON -DHIPSYCL_TARGETS="hip:gfx1100" -DCMAKE_C_COMPILER="$env:GITHUB_WORKSPACE\llvm\bin\clang.exe" -DCMAKE_CXX_COMPILER="$env:GITHUB_WORKSPACE\llvm\bin\clang++.exe" -DCMAKE_BUILD_TYPE=Release 
 
           sed -i 's/-MD/-MT/g' build.ninja
           ninja install -j4; if (-not $?) { ninja install -j1 }
