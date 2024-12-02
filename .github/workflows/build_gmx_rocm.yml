@@ -11,7 +11,7 @@ env:
   fftwversion: "3.3.9"
   fftwcompileto: C:/fftw3
   adcppto: C:/Temp/adcpp
-  ROCM_PATH: C:\Program Files\AMD\ROCm\6.1
+  ROCM_PATH: "C:/Program Files/AMD/ROCm/6.1"
 
 jobs:
   Windows:
