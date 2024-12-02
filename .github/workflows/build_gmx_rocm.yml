@@ -10,6 +10,7 @@ env:
   gmxcompileto: C:/Temp/gmxfiles
   fftwversion: "3.3.9"
   fftwcompileto: C:/Temp/fftw3
+  ROCM_PATH: C:\Program Files\AMD\ROCm\6.1
 
 jobs:
   Windows:
@@ -36,28 +37,34 @@ jobs:
           Get-ComputerInfo | Format-Table CsSystemType,OSName,OSDisplayVersion
           curl -Lfo setup.exe https://download.amd.com/developer/eula/rocm-hub/AMD-Software-PRO-Edition-24.Q3-WinSvr2022-For-HIP.exe
           Start-Process setup.exe -ArgumentList '-install','-log',"${env:USERPROFILE}\installer_log.txt" -NoNewWindow -Wait
+
+          dir ${{env.ROCM_PATH}}
           
-          dir "C:\Program Files\AMD\ROCm\*"
 
 
       - name: Build ROCM GROMACS
-        shell: bash
+        shell: pwsh
         if: ${{ success() }}
         run: |
-          cd gromacs-${{ env.gmxversion }} && mkdir build && cd build
-          choco install ninja
-          cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH="${{ env.fftwcompileto }}" -DGMX_SIMD=AVX2_256 -DGMX_GPU=SYCL -DGMX_SYCL_HIPSYCL=ON -DHIPSYCL_TARGETS="hip:gfx1100" -DCMAKE_C_COMPILER="" -DCMAKE_CXX_COMPILER="" -DCMAKE_BUILD_TYPE=Release 
+          dir ${{env.ROCM_PATH}}\bin
+          choco install ninja sed
+
+          Set-Location gromacs-${{ env.gmxversion }}
+          mkdir build 
+          Set-Location build
+
+          cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH=${{ env.fftwcompileto }};"${{env.ROCM_PATH}}" -DGMX_SIMD=AVX2_256 -DGMX_GPU=SYCL -DGMX_SYCL_HIPSYCL=ON -DHIPSYCL_TARGETS="hip:gfx1100" -DCMAKE_C_COMPILER="" -DCMAKE_CXX_COMPILER="" -DCMAKE_BUILD_TYPE=Release 
 
           sed -i 's/-MD/-MT/g' build.ninja
-          ninja install -j4 || ninja install -j1
+          ninja install -j4; if (-not $?) { ninja install -j1 }
 
-          cd ../../
-          rm -rf gromacs-${{ env.gmxversion }}
+          Set-Location ../..
+          Remove-Item -Path gromacs-${{ env.gmxversion }} -Recurse -Force
 
       - name: Copy DLLs and Test
         shell: pwsh
         run: |
-          Copy-Item -Path "${{ env.HIP_PATH }}\bin\amdhip64_*.dll" -Destination "${{ env.gmxcompileto }}\bin\" -Force
+          Copy-Item -Path "${{ env.ROCM_PATH }}\bin\amdhip64_*.dll" -Destination "${{ env.gmxcompileto }}\bin\" -Force
           Copy-Item -Path "${{ env.fftwcompileto }}\bin\*.dll" -Destination "${{ env.gmxcompileto }}\bin\" -Force
           Set-Location ${{ env.gmxcompileto }}
           Set-Location ${{ env.gmxcompileto }}\bin
