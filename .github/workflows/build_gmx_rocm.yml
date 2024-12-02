@@ -91,6 +91,7 @@ jobs:
       - name: Build AdaptiveCpp
         shell: pwsh
         run: |
+           dir $env:GITHUB_WORKSPACE\llvm
            $env:PATH = "$env:GITHUB_WORKSPACE\llvm\bin;$env:PATH"
            wget https://github.com/AdaptiveCpp/AdaptiveCpp/archive/refs/tags/v24.06.0.tar.gz
            tar -xf v24.06.0.tar.gz 
