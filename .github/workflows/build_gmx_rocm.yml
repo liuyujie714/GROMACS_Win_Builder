@@ -76,8 +76,9 @@ jobs:
         run: |
           Get-ComputerInfo | Format-Table CsSystemType,OSName,OSDisplayVersion
           curl -Lfo setup.exe https://download.amd.com/developer/eula/rocm-hub/AMD-Software-PRO-Edition-24.Q3-WinSvr2022-For-HIP.exe
-          Start-Process setup.exe -ArgumentList -install -log "${env:USERPROFILE}\installer_log.txt" -NoNewWindow -Wait
+          Start-Process setup.exe -ArgumentList '-install' -NoNewWindow -Wait
       
+          
       - name: Build AdaptiveCpp
         shell: pwsh
         run: |
