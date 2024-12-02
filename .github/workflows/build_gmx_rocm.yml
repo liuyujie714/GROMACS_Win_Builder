@@ -1,4 +1,4 @@
-name: Build Windows GROMACS with CUDA 12.4.1
+name: Build Windows GROMACS with ROCM
 
 on:
   push:
@@ -34,8 +34,10 @@ jobs:
       - name: Install ROCM HIP SDK
         run: |
           Get-ComputerInfo | Format-Table CsSystemType,OSName,OSDisplayVersion
-          wget -O setup.exe https://download.amd.com/developer/eula/rocm-hub/AMD-Software-PRO-Edition-24.Q3-WinSvr2022-For-HIP.exe
+          curl -Lfo setup.exe https://download.amd.com/developer/eula/rocm-hub/AMD-Software-PRO-Edition-24.Q3-WinSvr2022-For-HIP.exe
           Start-Process setup.exe -ArgumentList '-install','-log',"${env:USERPROFILE}\installer_log.txt" -NoNewWindow -Wait
+          dir C:\ProgramData\AMD\ROCm\*
+
 
       - name: Build ROCM GROMACS
         shell: bash
