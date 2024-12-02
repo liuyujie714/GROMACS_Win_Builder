@@ -11,7 +11,7 @@ env:
   fftwversion: "3.3.9"
   fftwcompileto: C:/fftw3
   adcppto: C:/Temp/adcpp
-  ROCM_PATH: C:\Program Files\AMD\ROCm\6.1
+  ROCM_PATH: C:\AMD\ROCm\6.1
 
 jobs:
   Windows:
@@ -85,6 +85,7 @@ jobs:
           curl -Lfo setup.exe https://download.amd.com/developer/eula/rocm-hub/AMD-Software-PRO-Edition-24.Q3-WinSvr2022-For-HIP.exe
 
           Start-Process setup.exe -ArgumentList '-install' -NoNewWindow -Wait
+          Move-Item -Path "C:\Program Files\AMD\ROCm\6.1\*" -Destination "${{env.ROCM_PATH}}" -Force
       
       - name: Build AdaptiveCpp
         shell: pwsh
@@ -96,7 +97,7 @@ jobs:
            md build
            cd build
            cmake .. -G Ninja -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_INSTALL_PREFIX=${{ env.adcppto }} -DBOOST_ROOT="$env:GITHUB_WORKSPACE/boost_1_81_0" -DBoost_COMPILER=-clang17 -DBoost_ARCHITECTURE=-x64 -DCMAKE_BUILD_TYPE=Release 
-           ninja install
+           ninja install -j4
 
            Copy-Item -Path "${{ env.adcppto }}\bin\libacpp-rt.dll" -Destination "${{ env.adcppto }}\bin\acpp-clang.dll"
            Set-Location ../..
