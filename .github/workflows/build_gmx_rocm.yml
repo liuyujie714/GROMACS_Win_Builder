@@ -65,10 +65,9 @@ jobs:
           .\b2.exe --with-context --with-fiber --with-atomic --with-filesystem --with-test toolset=clang address-model=64 variant=release --build-type=complete stage
       
       - name: Build AdaptiveCpp
-        shell: powershell
+        shell: pwsh
         run: |
            $env:PATH = "$env:GITHUB_WORKSPACE\llvm\bin;$env:PATH"
-           $env:PATH = "$env:GITHUB_WORKSPACE\ninja_install;$env:PATH"
            wget https://github.com/AdaptiveCpp/AdaptiveCpp/archive/refs/tags/v24.06.0.tar.gz
            tar -xf v24.06.0.tar.gz 
            Set-Location AdaptiveCpp-24.06.0
