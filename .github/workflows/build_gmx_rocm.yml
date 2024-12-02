@@ -38,7 +38,7 @@ jobs:
           curl -Lfo setup.exe https://download.amd.com/developer/eula/rocm-hub/AMD-Software-PRO-Edition-24.Q3-WinSvr2022-For-HIP.exe
           Start-Process setup.exe -ArgumentList '-install','-log',"${env:USERPROFILE}\installer_log.txt" -NoNewWindow -Wait
 
-          dir ${{env.ROCM_PATH}}
+          dir "${{env.ROCM_PATH}}"
           
 
 
@@ -46,7 +46,7 @@ jobs:
         shell: pwsh
         if: ${{ success() }}
         run: |
-          dir ${{env.ROCM_PATH}}\bin
+          dir "${{env.ROCM_PATH}}\bin"
           choco install ninja sed
 
           Set-Location gromacs-${{ env.gmxversion }}
