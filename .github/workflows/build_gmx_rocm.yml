@@ -11,7 +11,7 @@ env:
   fftwversion: "3.3.9"
   fftwcompileto: C:/fftw3
   adcppto: C:/Temp/adcpp
-  ROCM_PATH: C:\AMD\ROCm\6.1
+  ROCM_PATH: C:\AMD\ROCm\5.7
 
 jobs:
   Windows:
@@ -43,12 +43,12 @@ jobs:
           path: ${{github.workspace}}/llvm
           key: ${{runner.os}}-llvm-18
 
-      - name: Cache ROCM 6.1
+      - name: Cache ROCM 5.7
         id: cache-rocm
         uses: actions/cache@v4
         with:
           path: ${{env.ROCM_PATH}}
-          key: ${{runner.os}}-rocm-6.1
+          key: ${{runner.os}}-rocm-5.7
             
       - name: Download ninja & wget & sed tools
         run: |
@@ -80,14 +80,15 @@ jobs:
         if: steps.cache-rocm.outputs.cache-hit != 'true'
         run: |
           Get-ComputerInfo | Format-Table CsSystemType,OSName,OSDisplayVersion
-          curl -Lfo setup.exe https://download.amd.com/developer/eula/rocm-hub/AMD-Software-PRO-Edition-24.Q3-WinSvr2022-For-HIP.exe
+          curl -Lfo setup.exe https://www.amd.com/en/developer/resources/rocm-hub/eula/licenses.html?filename=AMD-Software-PRO-Edition-23.Q4-WinSvr2022-For-HIP.exe
           Start-Process setup.exe -ArgumentList '-install' -NoNewWindow -Wait
           mkdir "${{env.ROCM_PATH}}"
-          Move-Item -Path "C:\Program Files\AMD\ROCm\6.1\*" -Destination "${{env.ROCM_PATH}}" -Force
+          Move-Item -Path "C:\Program Files\AMD\ROCm\5.7\*" -Destination "${{env.ROCM_PATH}}" -Force
       
       - name: Build AdaptiveCpp
         shell: pwsh
         run: |
+           dir ${{env.ROCM_PATH}}\bin
            Copy-Item -Path "${{env.ROCM_PATH}}\bin\amdhip64_6.dll" -Destination "${{env.ROCM_PATH}}\bin\amdhip64.dll"
            wget https://github.com/AdaptiveCpp/AdaptiveCpp/archive/refs/tags/v24.06.0.tar.gz
            tar -xf v24.06.0.tar.gz 
@@ -137,7 +138,7 @@ jobs:
           Set-Location gromacs-${{ env.gmxversion }}
           mkdir build 
           Set-Location build
-          cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH="${{env.adcppto}};${{ env.fftwcompileto }}" -DAdaptiveCpp_DIR="${{env.adcppto}}\lib\cmake\AdaptiveCpp" -DGMX_SIMD=AVX2_256 -DGMX_GPU=SYCL -DGMX_SYCL=ACPP -DSYCL_CXX_FLAGS_EXTRA="--acpp-clang-include-path=$env:GITHUB_WORKSPACE\llvm\lib\clang\18\include -DNOMINMAX" -DACPP_TARGETS="hip:gfx1100" -DCMAKE_C_COMPILER="${{env.ROCM_PATH}}\bin\clang.exe" -DCMAKE_CXX_COMPILER="${{env.ROCM_PATH}}\bin\clang++.exe" -DCMAKE_BUILD_TYPE=Release 
+          cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH="${{env.adcppto}};${{ env.fftwcompileto }}" -DBOOST_ROOT="$env:GITHUB_WORKSPACE/boost_1_81_0" -DAdaptiveCpp_DIR="${{env.adcppto}}\lib\cmake\AdaptiveCpp" -DGMX_SIMD=AVX2_256 -DGMX_GPU=SYCL -DGMX_SYCL=ACPP -DSYCL_CXX_FLAGS_EXTRA="--acpp-clang-include-path=$env:GITHUB_WORKSPACE\llvm\lib\clang\18\include -DNOMINMAX" -DACPP_TARGETS="hip:gfx1100" -DCMAKE_C_COMPILER="${{env.ROCM_PATH}}\bin\clang.exe" -DCMAKE_CXX_COMPILER="${{env.ROCM_PATH}}\bin\clang++.exe" -DCMAKE_BUILD_TYPE=Release 
           sed -i 's/-MD/-MT/g' build.ninja
           ninja install -j4; if (-not $?) { ninja install -j1 }
           Set-Location ../..
