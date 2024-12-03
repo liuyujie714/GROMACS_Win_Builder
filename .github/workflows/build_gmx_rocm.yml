@@ -58,7 +58,7 @@ jobs:
         if: steps.cache-llvm.outputs.cache-hit != 'true'
         shell: powershell
         run: |
-          $llvmURL = "hhttps://github.com/llvm/llvm-project/releases/download/llvmorg-17.0.1/LLVM-17.0.1-win64.exe"
+          $llvmURL = "https://github.com/llvm/llvm-project/releases/download/llvmorg-17.0.1/LLVM-17.0.1-win64.exe"
           Invoke-WebRequest $llvmURL -OutFile $env:GITHUB_WORKSPACE\llvm.zip
           7z.exe x $env:GITHUB_WORKSPACE\llvm.zip -ollvm
           Remove-Item $env:GITHUB_WORKSPACE\llvm.zip
