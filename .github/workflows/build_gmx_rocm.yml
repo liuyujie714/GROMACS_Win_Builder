@@ -54,7 +54,7 @@ jobs:
         run: |
           choco install ninja wget sed
 
-      - name: Remve runner self LLVM
+      - name: Remove runner self LLVM
         run: |
           Remove-Item -Path "C:\Program Files\LLVM" -Force -Recurse
 
@@ -65,7 +65,7 @@ jobs:
           arch: x64
           directory: ${{github.workspace}}/llvm
 
-      - name: Build boost
+      - name: Build boost with Clang
         if: steps.cache-boost.outputs.cache-hit != 'true'
         shell: powershell
         run: |
@@ -76,7 +76,7 @@ jobs:
           7z.exe x boost.7z
           cd $boostFolderName
           .\bootstrap.bat clang
-          .\b2.exe --with-context --with-fiber --with-atomic --with-filesystem --with-test toolset=clang address-model=64 variant=release --build-type=complete stage
+          .\b2.exe cxxstd=14 --with-context --with-fiber --with-atomic --with-filesystem --with-test toolset=clang address-model=64 variant=release --build-type=complete stage
 
       - name: Install ROCM HIP SDK
         if: steps.cache-rocm.outputs.cache-hit != 'true'
