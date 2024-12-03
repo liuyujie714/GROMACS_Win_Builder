@@ -81,7 +81,7 @@ jobs:
           Invoke-WebRequest $boostURL -OutFile boost.7z
           7z.exe x boost.7z
           cd $boostFolderName
-          .\bootstrap.bat clang
+          .\bootstrap.bat msvc
           # $filePath = ".\project-config.jam"
           # $content = Get-Content $filePath
           # $newContent = $content -replace "msvc", "clang"
