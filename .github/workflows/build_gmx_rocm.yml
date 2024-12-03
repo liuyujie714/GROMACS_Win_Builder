@@ -121,11 +121,11 @@ jobs:
           Set-Location ..\..
           Remove-Item -Path fftw-${{ env.fftwversion }} -Force -Recurse
    
-      #- name: Configure build for amd64
-      #  uses: ilammy/msvc-dev-cmd@v1
-      #  with:
-       #   arch: amd64
-       #   toolset: 14.29
+      - name: Configure build for amd64
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: amd64
+          toolset: 14.29
 
       - name: Build ROCM GROMACS
         shell: pwsh
@@ -133,7 +133,7 @@ jobs:
         run: |
           #dumpbin /dependents "${{ env.adcppto }}\bin\acpp-clang.dll"
           $env:PATH = "${{ env.adcppto }}\bin;$env:PATH"
-          $env:PATH = "C:\Program Files\LLVM\bin;$env:PATH"
+          $env:PATH = "$env:GITHUB_WORKSPACE\llvm\bin;$env:PATH"
           Set-Location gromacs-${{ env.gmxversion }}
           mkdir build 
           Set-Location build
