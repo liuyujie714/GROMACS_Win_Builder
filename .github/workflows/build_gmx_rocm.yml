@@ -58,10 +58,12 @@ jobs:
         if: steps.cache-llvm.outputs.cache-hit != 'true'
         shell: powershell
         run: |
-          $llvmURL = "https://github.com/llvm/llvm-project/releases/download/llvmorg-17.0.1/LLVM-17.0.1-win64.exe"
+          $llvmURL = "https://github.com/mstorsjo/llvm-mingw/releases/download/20230919/llvm-mingw-20230919-ucrt-x86_64.zip"
+          $llvmFolderName = $llvmUrl.Split("/")[-1].Split(".")[0]
           Invoke-WebRequest $llvmURL -OutFile $env:GITHUB_WORKSPACE\llvm.zip
-          7z.exe x $env:GITHUB_WORKSPACE\llvm.zip -ollvm
-          Remove-Item $env:GITHUB_WORKSPACE\llvm.zip
+          Expand-Archive $env:GITHUB_WORKSPACE\llvm.zip
+          Move-Item $env:GITHUB_WORKSPACE\llvm\$llvmFolderName\* $env:GITHUB_WORKSPACE\llvm
+          Remove-Item $env:GITHUB_WORKSPACE\llvm\$llvmFolderName
      
       - name: Build boost
         if: steps.cache-boost.outputs.cache-hit != 'true'
