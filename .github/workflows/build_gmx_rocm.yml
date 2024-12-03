@@ -73,7 +73,6 @@ jobs:
           $boostURL = "https://boostorg.jfrog.io/artifactory/main/release/1.81.0/source/boost_1_81_0.7z"
           $boostFolderName = $boostUrl.Split("/")[-1].Split(".")[0]
           Invoke-WebRequest $boostURL -OutFile boost.7z
-          clang --version
           7z.exe x boost.7z
           cd $boostFolderName
           .\bootstrap.bat clang
@@ -88,79 +87,79 @@ jobs:
           mkdir "${{env.ROCM_PATH}}"
           Move-Item -Path "C:\Program Files\AMD\ROCm\5.7\*" -Destination "${{env.ROCM_PATH}}" -Force
       
-      # - name: Build AdaptiveCpp
-      #   shell: pwsh
-      #   run: |
-      #      dir "${{env.ROCM_PATH}}\bin"
-      #      wget https://github.com/AdaptiveCpp/AdaptiveCpp/archive/refs/tags/v24.06.0.tar.gz
-      #      tar -xf v24.06.0.tar.gz 
-      #      Set-Location AdaptiveCpp-24.06.0
-      #      md build
-      #      cd build
-      #      cmake .. -G Ninja -DCMAKE_PREFIX_PATH="C:\Program Files\LLVM" -DCMAKE_C_COMPILER=clang  -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_INSTALL_PREFIX=${{ env.adcppto }} -DBOOST_ROOT="$env:GITHUB_WORKSPACE/boost_1_81_0" -DBoost_COMPILER=-clang18 -DBoost_ARCHITECTURE=-x64 -DCMAKE_BUILD_TYPE=Release 
-      #      ninja install -j4
-      #      Copy-Item -Path "${{ env.adcppto }}\bin\acpp-rt.dll" -Destination "${{ env.adcppto }}\bin\acpp-clang.dll"
-      #      dir "${{ env.adcppto }}\bin"
-      #      Set-Location ../..
+      - name: Build AdaptiveCpp
+        shell: pwsh
+        run: |
+           dir "${{env.ROCM_PATH}}\bin"
+           wget https://github.com/AdaptiveCpp/AdaptiveCpp/archive/refs/tags/v24.06.0.tar.gz
+           tar -xf v24.06.0.tar.gz 
+           Set-Location AdaptiveCpp-24.06.0
+           md build
+           cd build
+           cmake .. -G Ninja -DCMAKE_PREFIX_PATH="C:\Program Files\LLVM" -DCMAKE_C_COMPILER=clang  -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_INSTALL_PREFIX=${{ env.adcppto }} -DBOOST_ROOT="$env:GITHUB_WORKSPACE/boost_1_81_0" -DBoost_COMPILER=-clang18 -DBoost_ARCHITECTURE=-x64 -DCMAKE_BUILD_TYPE=Release 
+           ninja install -j4
+           Copy-Item -Path "${{ env.adcppto }}\bin\acpp-rt.dll" -Destination "${{ env.adcppto }}\bin\acpp-clang.dll"
+           dir "${{ env.adcppto }}\bin"
+           Set-Location ../..
 
-      # - name: Download Gromacs and FFTW
-      #   shell: bash
-      #   env:
-      #     gmxdownloadlink: https://ftp.gromacs.org/gromacs/gromacs-${{env.gmxversion}}.tar.gz
-      #     fftwlink: https://fftw.org/fftw-${{env.fftwversion}}.tar.gz
-      #   run: |
-      #     curl -Lfo gromacs_src.tar.gz ${{ env.gmxdownloadlink }}
-      #     tar xf gromacs_src.tar.gz
-      #     curl -Lfo fftw_src.tar.gz ${{ env.fftwlink }}
-      #     tar xf fftw_src.tar.gz
+      - name: Download Gromacs and FFTW
+        shell: bash
+        env:
+          gmxdownloadlink: https://ftp.gromacs.org/gromacs/gromacs-${{env.gmxversion}}.tar.gz
+          fftwlink: https://fftw.org/fftw-${{env.fftwversion}}.tar.gz
+        run: |
+          curl -Lfo gromacs_src.tar.gz ${{ env.gmxdownloadlink }}
+          tar xf gromacs_src.tar.gz
+          curl -Lfo fftw_src.tar.gz ${{ env.fftwlink }}
+          tar xf fftw_src.tar.gz
 
-      # - name: Compile FFTW single precision
-      #   if: steps.cache-fftw.outputs.cache-hit != 'true'
-      #   shell: pwsh
-      #   run: |
-      #     Set-Location fftw-${{ env.fftwversion }} 
-      #     New-Item -ItemType Directory -Name build
-      #     Set-Location build
-      #     cmake .. -DCMAKE_INSTALL_PREFIX=${{ env.fftwcompileto }} -DENABLE_AVX=ON -DENABLE_AVX2=ON -DENABLE_SSE2=ON -DENABLE_THREADS=ON -DWITH_COMBINED_THREADS=ON -DENABLE_FLOAT=ON -DBUILD_SHARED_LIBS=ON -G "Visual Studio 17 2022" -T "v142" -A "x64"
-      #     cmake --build . --target INSTALL --config Release -- "-maxCpuCount" "-p:CL_MPCount=3"
-      #     Set-Location ..\..
-      #     Remove-Item -Path fftw-${{ env.fftwversion }} -Force -Recurse
+      - name: Compile FFTW single precision
+        if: steps.cache-fftw.outputs.cache-hit != 'true'
+        shell: pwsh
+        run: |
+          Set-Location fftw-${{ env.fftwversion }} 
+          New-Item -ItemType Directory -Name build
+          Set-Location build
+          cmake .. -DCMAKE_INSTALL_PREFIX=${{ env.fftwcompileto }} -DENABLE_AVX=ON -DENABLE_AVX2=ON -DENABLE_SSE2=ON -DENABLE_THREADS=ON -DWITH_COMBINED_THREADS=ON -DENABLE_FLOAT=ON -DBUILD_SHARED_LIBS=ON -G "Visual Studio 17 2022" -T "v142" -A "x64"
+          cmake --build . --target INSTALL --config Release -- "-maxCpuCount" "-p:CL_MPCount=3"
+          Set-Location ..\..
+          Remove-Item -Path fftw-${{ env.fftwversion }} -Force -Recurse
    
-      # - name: Configure build for amd64
-      #   uses: ilammy/msvc-dev-cmd@v1
-      #   with:
-      #     arch: amd64
-      #     toolset: 14.29
+      - name: Configure build for amd64
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: amd64
+          toolset: 14.29
 
-      # - name: Build ROCM GROMACS
-      #   shell: pwsh
-      #   if: ${{ success() }}
-      #   run: |
-      #     #dumpbin /dependents "${{ env.adcppto }}\bin\acpp-clang.dll"
-      #     $env:PATH = "${{ env.adcppto }}\bin;$env:PATH"
-      #     $env:PATH = "$env:GITHUB_WORKSPACE\llvm\bin;$env:PATH"
-      #     Set-Location gromacs-${{ env.gmxversion }}
-      #     mkdir build 
-      #     Set-Location build
-      #     dir "$env:GITHUB_WORKSPACE/boost_1_81_0/stage/lib"
-      #     cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH="${{env.adcppto}};${{ env.fftwcompileto }}" -DBOOST_ROOT="$env:GITHUB_WORKSPACE/boost_1_81_0" -DAdaptiveCpp_DIR="${{env.adcppto}}\lib\cmake\AdaptiveCpp" -DGMX_SIMD=AVX2_256 -DGMX_GPU=SYCL -DGMX_SYCL=ACPP -DSYCL_CXX_FLAGS_EXTRA="--acpp-clang-include-path=$env:GITHUB_WORKSPACE\llvm\lib\clang\18\include -DNOMINMAX" -DACPP_TARGETS="hip:gfx1100" -DCMAKE_C_COMPILER="${{env.ROCM_PATH}}\bin\clang.exe" -DCMAKE_CXX_COMPILER="${{env.ROCM_PATH}}\bin\clang++.exe" -DCMAKE_BUILD_TYPE=Release 
-      #     sed -i 's/-MD/-MT/g' build.ninja
-      #     ninja install -j4; if (-not $?) { ninja install -j1 }
-      #     Set-Location ../..
-      #     Remove-Item -Path gromacs-${{ env.gmxversion }} -Recurse -Force
+      - name: Build ROCM GROMACS
+        shell: pwsh
+        if: ${{ success() }}
+        run: |
+          #dumpbin /dependents "${{ env.adcppto }}\bin\acpp-clang.dll"
+          $env:PATH = "${{ env.adcppto }}\bin;$env:PATH"
+          $env:PATH = "$env:GITHUB_WORKSPACE\llvm\bin;$env:PATH"
+          Set-Location gromacs-${{ env.gmxversion }}
+          mkdir build 
+          Set-Location build
+          dir "$env:GITHUB_WORKSPACE/boost_1_81_0/stage/lib"
+          cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH="${{env.adcppto}};${{ env.fftwcompileto }}" -DBOOST_ROOT="$env:GITHUB_WORKSPACE/boost_1_81_0" -DAdaptiveCpp_DIR="${{env.adcppto}}\lib\cmake\AdaptiveCpp" -DGMX_SIMD=AVX2_256 -DGMX_GPU=SYCL -DGMX_SYCL=ACPP -DSYCL_CXX_FLAGS_EXTRA="--acpp-clang-include-path=$env:GITHUB_WORKSPACE\llvm\lib\clang\18\include -DNOMINMAX" -DACPP_TARGETS="hip:gfx1100" -DCMAKE_C_COMPILER="${{env.ROCM_PATH}}\bin\clang.exe" -DCMAKE_CXX_COMPILER="${{env.ROCM_PATH}}\bin\clang++.exe" -DCMAKE_BUILD_TYPE=Release 
+          sed -i 's/-MD/-MT/g' build.ninja
+          ninja install -j4; if (-not $?) { ninja install -j1 }
+          Set-Location ../..
+          Remove-Item -Path gromacs-${{ env.gmxversion }} -Recurse -Force
 
-      # - name: Copy DLLs and Test
-      #   shell: pwsh
-      #   run: |
-      #     Copy-Item -Path "${{ env.ROCM_PATH }}\bin\amdhip64_*.dll" -Destination "${{ env.gmxcompileto }}\bin\" -Force
-      #     Copy-Item -Path "${{ env.fftwcompileto }}\bin\*.dll" -Destination "${{ env.gmxcompileto }}\bin\" -Force
-      #     Set-Location ${{ env.gmxcompileto }}
-      #     Set-Location ${{ env.gmxcompileto }}\bin
-      #     .\gmx.exe -version
+      - name: Copy DLLs and Test
+        shell: pwsh
+        run: |
+          Copy-Item -Path "${{ env.ROCM_PATH }}\bin\amdhip64_*.dll" -Destination "${{ env.gmxcompileto }}\bin\" -Force
+          Copy-Item -Path "${{ env.fftwcompileto }}\bin\*.dll" -Destination "${{ env.gmxcompileto }}\bin\" -Force
+          Set-Location ${{ env.gmxcompileto }}
+          Set-Location ${{ env.gmxcompileto }}\bin
+          .\gmx.exe -version
           
-      # - name: Upload Windows artifact
-      #   uses: actions/upload-artifact@v4
-      #   if: ${{ success() }}
-      #   with:
-      #     name: gmx_rocm_bins
-      #     path: ${{ env.gmxcompileto }}
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        if: ${{ success() }}
+        with:
+          name: gmx_rocm_bins
+          path: ${{ env.gmxcompileto }}
