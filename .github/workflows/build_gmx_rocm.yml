@@ -80,7 +80,7 @@ jobs:
         if: steps.cache-rocm.outputs.cache-hit != 'true'
         run: |
           Get-ComputerInfo | Format-Table CsSystemType,OSName,OSDisplayVersion
-          curl -Lfo setup.exe https://www.amd.com/en/developer/resources/rocm-hub/eula/licenses.html?filename=AMD-Software-PRO-Edition-23.Q4-WinSvr2022-For-HIP.exe
+          curl -Lfo setup.exe https://download.amd.com/developer/eula/rocm-hub/AMD-Software-PRO-Edition-23.Q4-WinSvr2022-For-HIP.exe
           Start-Process setup.exe -ArgumentList '-install' -NoNewWindow -Wait
           mkdir "${{env.ROCM_PATH}}"
           Move-Item -Path "C:\Program Files\AMD\ROCm\5.7\*" -Destination "${{env.ROCM_PATH}}" -Force
@@ -88,7 +88,6 @@ jobs:
       - name: Build AdaptiveCpp
         shell: pwsh
         run: |
-           dir ${{env.ROCM_PATH}}\bin
            Copy-Item -Path "${{env.ROCM_PATH}}\bin\amdhip64_6.dll" -Destination "${{env.ROCM_PATH}}\bin\amdhip64.dll"
            wget https://github.com/AdaptiveCpp/AdaptiveCpp/archive/refs/tags/v24.06.0.tar.gz
            tar -xf v24.06.0.tar.gz 
