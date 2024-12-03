@@ -82,10 +82,10 @@ jobs:
           7z.exe x boost.7z
           cd $boostFolderName
           .\bootstrap.bat msvc
-          $filePath = ".\project-config.jam"
-          $content = Get-Content $filePath
-          $newContent = $content -replace "msvc", "clang"
-          $newContent | Set-Content $filePath
+          # $filePath = ".\project-config.jam"
+          # $content = Get-Content $filePath
+          # $newContent = $content -replace "msvc", "clang"
+          # $newContent | Set-Content $filePath
           .\b2.exe cxxstd=14 --with-context --with-fiber --with-atomic --with-filesystem --with-test toolset=clang address-model=64 variant=release --build-type=complete stage
 
       - name: Install ROCM HIP SDK
