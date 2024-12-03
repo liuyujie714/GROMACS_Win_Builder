@@ -87,6 +87,7 @@ jobs:
           Start-Process setup.exe -ArgumentList '-install' -NoNewWindow -Wait
           mkdir "${{env.ROCM_PATH}}"
           Move-Item -Path "C:\Program Files\AMD\ROCm\6.1\*" -Destination "${{env.ROCM_PATH}}" -Force
+          $env:PATH = "${{env.ROCM_PATH}}\bin;$env:PATH"
       
       - name: Build AdaptiveCpp
         shell: pwsh
