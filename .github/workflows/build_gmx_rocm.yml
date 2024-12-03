@@ -90,7 +90,7 @@ jobs:
         shell: pwsh
         run: |
            #Copy-Item -Path "${{env.ROCM_PATH}}\bin\amdhip64_6.dll" -Destination "${{env.ROCM_PATH}}\bin\amdhip64.dll"
-           dir ""${{env.ROCM_PATH}}\bin
+           dir "${{env.ROCM_PATH}}\bin"
            wget https://github.com/AdaptiveCpp/AdaptiveCpp/archive/refs/tags/v24.06.0.tar.gz
            tar -xf v24.06.0.tar.gz 
            Set-Location AdaptiveCpp-24.06.0
