@@ -120,11 +120,12 @@ jobs:
           cmake --build . --target INSTALL --config Release -- "-maxCpuCount" "-p:CL_MPCount=3"
           Set-Location ..\..
           Remove-Item -Path fftw-${{ env.fftwversion }} -Force -Recurse
-      - name: Configure build for amd64
-        uses: ilammy/msvc-dev-cmd@v1
-        with:
-          arch: amd64
-          toolset: 14.29
+   
+      #- name: Configure build for amd64
+      #  uses: ilammy/msvc-dev-cmd@v1
+      #  with:
+       #   arch: amd64
+       #   toolset: 14.29
 
       - name: Build ROCM GROMACS
         shell: pwsh
