@@ -36,12 +36,12 @@ jobs:
           path: ${{env.fftwcompileto}}
           key: ${{runner.os}}-fftw3.3.9
 
-      - name: Cache LLVM 18
+      - name: Cache LLVM 17
         id: cache-llvm
         uses: actions/cache@v4
         with:
           path: ${{github.workspace}}/llvm
-          key: ${{runner.os}}-llvm-18
+          key: ${{runner.os}}-llvm-17
 
       - name: Cache ROCM 5.7
         id: cache-rocm
@@ -53,11 +53,11 @@ jobs:
       - name: Download ninja & wget & sed tools
         run: |
           choco install ninja wget sed
-      - name: Install MinGW LLVM 18
+      - name: Install MinGW LLVM 17
         if: steps.cache-llvm.outputs.cache-hit != 'true'
         shell: powershell
         run: |
-          $llvmURL = "https://github.com/mstorsjo/llvm-mingw/releases/download/20240619/llvm-mingw-20240619-ucrt-x86_64.zip"
+          $llvmURL = "https://github.com/mstorsjo/llvm-mingw/releases/download/20230919/llvm-mingw-20230919-ucrt-x86_64.zip"
           $llvmFolderName = $llvmUrl.Split("/")[-1].Split(".")[0]
           Invoke-WebRequest $llvmURL -OutFile $env:GITHUB_WORKSPACE\llvm.zip
           Expand-Archive $env:GITHUB_WORKSPACE\llvm.zip
@@ -89,7 +89,6 @@ jobs:
       - name: Build AdaptiveCpp
         shell: pwsh
         run: |
-           #Copy-Item -Path "${{env.ROCM_PATH}}\bin\amdhip64_6.dll" -Destination "${{env.ROCM_PATH}}\bin\amdhip64.dll"
            dir "${{env.ROCM_PATH}}\bin"
            wget https://github.com/AdaptiveCpp/AdaptiveCpp/archive/refs/tags/v24.06.0.tar.gz
            tar -xf v24.06.0.tar.gz 
