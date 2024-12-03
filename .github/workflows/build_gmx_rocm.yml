@@ -101,6 +101,7 @@ jobs:
            ninja install -j4
            Copy-Item -Path "${{ env.adcppto }}\bin\*acpp-rt.dll" -Destination "${{ env.adcppto }}\bin\acpp-clang.dll"
            dir "${{ env.adcppto }}\bin"
+           dir "${{ env.adcppto }}\lib"
            Set-Location ../..
 
       - name: Download Gromacs and FFTW
