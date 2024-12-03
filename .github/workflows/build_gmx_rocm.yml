@@ -137,7 +137,7 @@ jobs:
         shell: pwsh
         if: ${{ success() }}
         run: |
-          dumpbin /dependents "${{ env.adcppto }}\bin\acpp-clang.dll"
+          #dumpbin /dependents "${{ env.adcppto }}\bin\acpp-clang.dll"
           $env:PATH = "${{ env.adcppto }}\bin;$env:PATH"
           $env:PATH = "$env:GITHUB_WORKSPACE\llvm\bin;$env:PATH"
           Set-Location gromacs-${{ env.gmxversion }}
