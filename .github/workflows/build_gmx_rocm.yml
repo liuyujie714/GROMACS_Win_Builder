@@ -137,7 +137,7 @@ jobs:
           Set-Location gromacs-${{ env.gmxversion }}
           mkdir build 
           Set-Location build
-          cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH="${{env.adcppto}};${{ env.fftwcompileto }}" -DAdaptiveCpp_DIR="${{env.adcppto}}\lib\cmake\AdaptiveCpp" -DGMX_SIMD=AVX2_256 -DGMX_GPU=SYCL -DGMX_SYCL=ACPP -DSYCL_CXX_FLAGS_EXTRA="--acpp-clang-include-path=${{env.ROCM_PATH}}\lib\clang\19\include" -DACPP_TARGETS="hip:gfx1100" -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Release 
+          cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH="${{env.adcppto}};${{ env.fftwcompileto }}" -DAdaptiveCpp_DIR="${{env.adcppto}}\lib\cmake\AdaptiveCpp" -DGMX_SIMD=AVX2_256 -DGMX_GPU=SYCL -DGMX_SYCL=ACPP -DSYCL_CXX_FLAGS_EXTRA="--acpp-clang-include-path=C:\Program Files\LLVM\lib\clang\18\include" -DACPP_TARGETS="hip:gfx1100" -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Release 
           sed -i 's/-MD/-MT/g' build.ninja
           ninja install -j4; if (-not $?) { ninja install -j1 }
           Set-Location ../..
