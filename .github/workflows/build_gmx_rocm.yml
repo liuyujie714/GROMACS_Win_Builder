@@ -26,8 +26,8 @@ jobs:
         id: cache-boost
         uses: actions/cache@v4
         with:
-          path: ${{github.workspace}}/boost_1_81_0
-          key: ${{runner.os}}-boost1810
+          path: ${{github.workspace}}/boost-1.85.0
+          key: ${{runner.os}}-boost1850
 
       - name: Cache FFTW3
         id: cache-fftw
@@ -65,28 +65,24 @@ jobs:
           arch: x64
           directory: ${{github.workspace}}/llvm
 
-      - name: Configure build for amd64
-        uses: ilammy/msvc-dev-cmd@v1
-        with:
-          arch: amd64
-          toolset: 14.29
+
 
       - name: Build boost with Clang
         if: steps.cache-boost.outputs.cache-hit != 'true'
         shell: powershell
         run: |
           $env:PATH = "$env:GITHUB_WORKSPACE\llvm\bin;$env:PATH"
-          $boostURL = "https://boostorg.jfrog.io/artifactory/main/release/1.81.0/source/boost_1_81_0.7z"
-          $boostFolderName = $boostUrl.Split("/")[-1].Split(".")[0]
+          $boostURL = "https://github.com/boostorg/boost/releases/download/boost-1.85.0/boost-1.85.0-b2-nodocs.7z"
+          $boostFolderName = $boostUrl.Split("/")[-2]
           Invoke-WebRequest $boostURL -OutFile boost.7z
           7z.exe x boost.7z
           cd $boostFolderName
-          .\bootstrap.bat msvc
+          .\bootstrap.bat clang
           # $filePath = ".\project-config.jam"
           # $content = Get-Content $filePath
           # $newContent = $content -replace "msvc", "clang"
           # $newContent | Set-Content $filePath
-          .\b2.exe cxxstd=14 --with-context --with-fiber --with-atomic --with-filesystem --with-test toolset=clang address-model=64 variant=release --build-type=complete stage
+          .\b2.exe cxxstd=14  link=static --with-context --with-fiber --with-atomic --with-filesystem --with-test toolset=clang address-model=64 variant=release --build-type=complete stage
 
       - name: Install ROCM HIP SDK
         if: steps.cache-rocm.outputs.cache-hit != 'true'
@@ -107,7 +103,7 @@ jobs:
       #      Set-Location AdaptiveCpp-24.06.0
       #      md build
       #      cd build
-      #      cmake .. -G Ninja -DCMAKE_PREFIX_PATH="$env:GITHUB_WORKSPACE\llvm" -DCMAKE_C_COMPILER=clang  -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_INSTALL_PREFIX=${{ env.adcppto }} -DBOOST_ROOT="$env:GITHUB_WORKSPACE/boost_1_81_0" -DBoost_COMPILER=-clang17 -DBoost_ARCHITECTURE=-x64 -DCMAKE_BUILD_TYPE=Release 
+      #      cmake .. -G Ninja -DCMAKE_PREFIX_PATH="$env:GITHUB_WORKSPACE\llvm" -DCMAKE_C_COMPILER=clang  -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_INSTALL_PREFIX=${{ env.adcppto }} -DBOOST_ROOT="$env:GITHUB_WORKSPACE/boost-1.85.0" -DBoost_COMPILER=-clang17 -DBoost_ARCHITECTURE=-x64 -DCMAKE_BUILD_TYPE=Release 
       #      ninja install -j4
       #      Copy-Item -Path "${{ env.adcppto }}\bin\*acpp-rt.dll" -Destination "${{ env.adcppto }}\bin\acpp-clang.dll"
       #      dir "${{ env.adcppto }}\bin"
@@ -147,8 +143,8 @@ jobs:
       #     Set-Location gromacs-${{ env.gmxversion }}
       #     mkdir build 
       #     Set-Location build
-      #     dir "$env:GITHUB_WORKSPACE/boost_1_81_0/stage/lib"
-      #     cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH="${{env.adcppto}};${{ env.fftwcompileto }}" -DBOOST_ROOT="$env:GITHUB_WORKSPACE/boost_1_81_0" -DBOOST_LIBRARYDIR="$env:GITHUB_WORKSPACE/boost_1_81_0/stage/lib" -DBOOST_INCLUDEDIR="$env:GITHUB_WORKSPACE/boost_1_81_0" -DCMAKE_CXX_FLAGS="-fuse-ld=lld" -DCMAKE_C_FLAGS="-fuse-ld=lld" -DAdaptiveCpp_DIR="${{env.adcppto}}\lib\cmake\AdaptiveCpp" -DGMX_SIMD=AVX2_256 -DGMX_GPU=SYCL -DGMX_SYCL=ACPP -DSYCL_CXX_FLAGS_EXTRA="--acpp-clang-include-path=$env:GITHUB_WORKSPACE\llvm\lib\clang\17\include -DNOMINMAX" -DACPP_TARGETS="hip:gfx1100" -DCMAKE_C_COMPILER="${{env.ROCM_PATH}}\bin\clang.exe" -DCMAKE_CXX_COMPILER="${{env.ROCM_PATH}}\bin\clang++.exe" -DCMAKE_BUILD_TYPE=Release 
+      #     dir "$env:GITHUB_WORKSPACE/boost-1.85.0/stage/lib"
+      #     cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH="${{env.adcppto}};${{ env.fftwcompileto }}" -DBOOST_ROOT="$env:GITHUB_WORKSPACE/boost-1.85.0" -DBOOST_LIBRARYDIR="$env:GITHUB_WORKSPACE/boost-1.85.0/stage/lib" -DBOOST_INCLUDEDIR="$env:GITHUB_WORKSPACE/boost-1.85.0" -DCMAKE_CXX_FLAGS="-fuse-ld=lld" -DCMAKE_C_FLAGS="-fuse-ld=lld" -DAdaptiveCpp_DIR="${{env.adcppto}}\lib\cmake\AdaptiveCpp" -DGMX_SIMD=AVX2_256 -DGMX_GPU=SYCL -DGMX_SYCL=ACPP -DSYCL_CXX_FLAGS_EXTRA="--acpp-clang-include-path=$env:GITHUB_WORKSPACE\llvm\lib\clang\17\include -DNOMINMAX" -DACPP_TARGETS="hip:gfx1100" -DCMAKE_C_COMPILER="${{env.ROCM_PATH}}\bin\clang.exe" -DCMAKE_CXX_COMPILER="${{env.ROCM_PATH}}\bin\clang++.exe" -DCMAKE_BUILD_TYPE=Release 
       #     sed -i 's/-MD/-MT/g' build.ninja
       #     ninja install -j4; if (-not $?) { ninja install -j1 }
       #     Set-Location ../..
