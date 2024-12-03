@@ -87,13 +87,12 @@ jobs:
           Start-Process setup.exe -ArgumentList '-install' -NoNewWindow -Wait
           mkdir "${{env.ROCM_PATH}}"
           Move-Item -Path "C:\Program Files\AMD\ROCm\6.1\*" -Destination "${{env.ROCM_PATH}}" -Force
-          Copy-Item -Path "${{env.ROCM_PATH}}\bin\amdhip64_6.dll" -Destination "${{env.ROCM_PATH}}\bin\amdhip64.dll"
-          $env:PATH = "${{env.ROCM_PATH}}\bin;$env:PATH"
       
       - name: Build AdaptiveCpp
         shell: pwsh
         run: |
-           $env:PATH = "$env:GITHUB_WORKSPACE\llvm\bin;$env:PATH"
+           Copy-Item -Path "${{env.ROCM_PATH}}\bin\amdhip64_6.dll" -Destination "${{env.ROCM_PATH}}\bin\amdhip64.dll"
+           $env:PATH = "${{env.ROCM_PATH}}\bin;$env:GITHUB_WORKSPACE\llvm\bin;$env:PATH"
            wget https://github.com/AdaptiveCpp/AdaptiveCpp/archive/refs/tags/v24.06.0.tar.gz
            tar -xf v24.06.0.tar.gz 
            Set-Location AdaptiveCpp-24.06.0
