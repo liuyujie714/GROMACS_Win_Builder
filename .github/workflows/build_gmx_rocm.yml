@@ -53,11 +53,9 @@ jobs:
       - name: Download ninja & wget & sed tools
         run: |
           choco install ninja wget sed
-
       - name: Remove runner self LLVM
         run: |
           Remove-Item -Path "C:\Program Files\LLVM" -Force -Recurse
-
       - name: Install LLVM and Clang 17
         uses: KyleMayes/install-llvm-action@v2
         with:
@@ -86,13 +84,8 @@ jobs:
           7z.exe x boost.7z
           cd $boostFolderName
           .\bootstrap.bat msvc
-          $filePath = ".\project-config.jam"
-          $content = Get-Content $filePath
-          $newContent = $content -replace "msvc", "clang-win : 17 : ${{env.ROCM_PATH}}/bin/clang.exe"
-          $newContent | Set-Content $filePath
-          type $filePath
-          .\b2.exe cxxstd=14 link=static runtime-link=shared runtime-link=static runtime-debugging=on --with-context --with-fiber --with-atomic --with-filesystem --with-test toolset=clang address-model=64 --build-type=complete stage threading=multi debug release
-
+          .\b2.exe cxxstd=14 link=static runtime-link=shared runtime-link=static runtime-debugging=on --with-context --with-fiber --with-atomic --with-filesystem --with-test toolset=clang-win address-model=64 --build-type=complete stage threading=multi debug release
+          .\b2.exe cxxstd=14 link=static runtime-link=shared runtime-link=static --with-context --with-fiber --with-atomic --with-filesystem --with-test toolset=clang-win address-model=64 --build-type=complete stage threading=multi debug release
       - name: Install ROCM HIP SDK
         if: steps.cache-rocm.outputs.cache-hit != 'true'
         run: |
@@ -107,18 +100,19 @@ jobs:
         run: |
            dir "${{env.ROCM_PATH}}\bin"
            $env:PATH = "$env:GITHUB_WORKSPACE\llvm\bin;$env:PATH"
+           #$env:PATH = "${{env.ROCM_PATH}}\bin;$env:PATH"
+          
            wget https://github.com/AdaptiveCpp/AdaptiveCpp/archive/refs/tags/v24.06.0.tar.gz
            tar -xf v24.06.0.tar.gz 
            Set-Location AdaptiveCpp-24.06.0
            md build
            cd build
-           cmake .. -G Ninja -DCMAKE_PREFIX_PATH="$env:GITHUB_WORKSPACE\llvm" -DCMAKE_C_COMPILER=clang  -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_INSTALL_PREFIX=${{ env.adcppto }} -DBOOST_ROOT="$env:GITHUB_WORKSPACE/boost-1.85.0" -DBoost_COMPILER=-clang17 -DBoost_ARCHITECTURE=-x64 -DCMAKE_BUILD_TYPE=Release 
+           cmake .. -G Ninja -DCMAKE_PREFIX_PATH="$env:GITHUB_WORKSPACE\llvm" -DCMAKE_C_COMPILER=clang  -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_INSTALL_PREFIX=${{ env.adcppto }} -DBOOST_ROOT="$env:GITHUB_WORKSPACE/boost-1.85.0" -DBoost_COMPILER=-clangw17 -DBoost_ARCHITECTURE=-x64 -DCMAKE_BUILD_TYPE=Release 
            ninja install -j4
            Copy-Item -Path "${{ env.adcppto }}\bin\*acpp-rt.dll" -Destination "${{ env.adcppto }}\bin\acpp-clang.dll"
            dir "${{ env.adcppto }}\bin"
            dir "${{ env.adcppto }}\lib"
            Set-Location ../..
-
       - name: Download Gromacs and FFTW
         shell: bash
         env:
@@ -129,7 +123,6 @@ jobs:
           tar xf gromacs_src.tar.gz
           curl -Lfo fftw_src.tar.gz ${{ env.fftwlink }}
           tar xf fftw_src.tar.gz
-
       - name: Compile FFTW single precision
         if: steps.cache-fftw.outputs.cache-hit != 'true'
         shell: pwsh
@@ -141,7 +134,6 @@ jobs:
           cmake --build . --target INSTALL --config Release -- "-maxCpuCount" "-p:CL_MPCount=3"
           Set-Location ..\..
           Remove-Item -Path fftw-${{ env.fftwversion }} -Force -Recurse
-
       - name: Build ROCM GROMACS
         shell: pwsh
         if: ${{ success() }}
@@ -153,12 +145,11 @@ jobs:
           mkdir build 
           Set-Location build
           dir "$env:GITHUB_WORKSPACE/boost-1.85.0/stage/lib"
-          cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH="${{env.adcppto}};${{ env.fftwcompileto }}" -DBOOST_ROOT="$env:GITHUB_WORKSPACE/boost-1.85.0" -DBOOST_LIBRARYDIR="$env:GITHUB_WORKSPACE/boost-1.85.0/stage/lib" -DBOOST_INCLUDEDIR="$env:GITHUB_WORKSPACE/boost-1.85.0" -DCMAKE_CXX_FLAGS="-fuse-ld=lld" -DCMAKE_C_FLAGS="-fuse-ld=lld" -DAdaptiveCpp_DIR="${{env.adcppto}}\lib\cmake\AdaptiveCpp" -DGMX_SIMD=AVX2_256 -DGMX_GPU=SYCL -DGMX_SYCL=ACPP -DSYCL_CXX_FLAGS_EXTRA="--acpp-clang-include-path=${{env.ROCM_PATH}}\lib\clang\17\include -DNOMINMAX" -DACPP_TARGETS="hip:gfx1100" -DCMAKE_C_COMPILER="${{env.ROCM_PATH}}\bin\clang.exe" -DCMAKE_CXX_COMPILER="${{env.ROCM_PATH}}\bin\clang++.exe" -DCMAKE_BUILD_TYPE=Release 
+          cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH="${{env.adcppto}};${{ env.fftwcompileto }}" -DCMAKE_EXE_LINKER_FLAGS="-Xlinker $env:GITHUB_WORKSPACE/boost-1.85.0/stage/lib/libboost_fiber-clangw17-mt-x64-1_85.lib $env:GITHUB_WORKSPACE/boost-1.85.0/stage/lib/libboost_context-clangw17-mt-x64-1_85.lib" -DAdaptiveCpp_DIR="${{env.adcppto}}\lib\cmake\AdaptiveCpp" -DGMX_SIMD=AVX2_256 -DGMX_GPU=SYCL -DGMX_SYCL=ACPP -DSYCL_CXX_FLAGS_EXTRA="--acpp-clang-include-path=${{env.ROCM_PATH}}\lib\clang\17\include --acpp-clang=${{env.ROCM_PATH}}\bin\clang++.exe -DNOMINMAX" -DACPP_TARGETS="hip:gfx1100" -DCMAKE_C_COMPILER="${{env.ROCM_PATH}}\bin\clang.exe" -DCMAKE_CXX_COMPILER="${{env.ROCM_PATH}}\bin\clang++.exe" -DCMAKE_BUILD_TYPE=Release 
           sed -i 's/-MD/-MT/g' build.ninja
           ninja install -j4; if (-not $?) { ninja install -j1 }
           Set-Location ../..
           Remove-Item -Path gromacs-${{ env.gmxversion }} -Recurse -Force
-
       - name: Copy DLLs and Test
         shell: pwsh
         run: |
