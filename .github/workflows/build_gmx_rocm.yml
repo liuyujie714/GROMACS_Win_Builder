@@ -116,15 +116,12 @@ jobs:
            dir "${{ env.adcppto }}\lib"
            Set-Location ../..
 
-           mkdir acpp_dll
-           Copy-Item -Path "${{ env.adcppto }}\bin\*.dll" -Destination ".\acpp_dll\"
-
       - name: Upload Acpp dll artifact
         uses: actions/upload-artifact@v4
         if: ${{ success() }}
         with:
-          name: acpp_dll
-          path: .\acpp_dll
+          name: adcpp_win64
+          path: ${{ env.adcppto }}
 
 
       # - name: Download Gromacs and FFTW
