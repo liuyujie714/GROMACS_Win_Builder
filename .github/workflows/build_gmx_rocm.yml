@@ -177,9 +177,11 @@ jobs:
           Copy-Item -Path "${{env.adcppto}}\bin\hipSYCL"                -Destination "${{ env.gmxcompileto }}\bin\" -Force -Recurse
           Copy-Item -Path "${{env.adcppto}}\bin\*.dll"                  -Destination "${{ env.gmxcompileto }}\bin\" -Force
           Copy-Item -Path "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Redist\MSVC\14.2*\debug_nonredist\x64\Microsoft.VC142.OpenMP.LLVM\libomp140.x86_64.dll" -Destination "${{ env.gmxcompileto }}\bin\" -Force
-          Copy-Item -Path "${{github.workspace}}\patch\amddirver\*.dll"  -Destination "${{ env.gmxcompileto }}\bin\" -Force
-          # don't run gmx.exe because no AMD display driver 
-          #.\gmx.exe -version
+          7z x "${{github.workspace}}\patch\amddirver.7z"
+          Copy-Item -Path "${{github.workspace}}\*.dll"                 -Destination "${{ env.gmxcompileto }}\bin\" -Force
+          # test gmx if work
+          Set-Location ${{ env.gmxcompileto }}\bin
+          .\gmx.exe -version
           
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
