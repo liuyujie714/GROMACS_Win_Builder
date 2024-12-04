@@ -74,10 +74,12 @@ jobs:
       - name: Build boost with Clang
         if: steps.cache-boost.outputs.cache-hit != 'true'
         shell: powershell
+        env:
+          LLVM_PATH: "${{env.ROCM_PATH}}"
+          LD_LIBRARY_PATH: "${{env.ROCM_PATH}}/lib"
         run: |
          # $env:PATH = "$env:GITHUB_WORKSPACE\llvm\bin;$env:PATH"
           $env:PATH = "${{env.ROCM_PATH}}\bin;$env:PATH"
-          $env:LD_LIBRARY_PATH="${{env.ROCM_PATH}}\lib"
           $boostURL = "https://github.com/boostorg/boost/releases/download/boost-1.85.0/boost-1.85.0-b2-nodocs.7z"
           $boostFolderName = $boostUrl.Split("/")[-2]
           Invoke-WebRequest $boostURL -OutFile boost.7z
