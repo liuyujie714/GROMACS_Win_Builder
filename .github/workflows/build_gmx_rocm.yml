@@ -145,11 +145,12 @@ jobs:
           mkdir build 
           Set-Location build
           dir "$env:GITHUB_WORKSPACE/boost-1.85.0/stage/lib"
-          cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH="${{env.adcppto}};${{ env.fftwcompileto }}" -DCMAKE_EXE_LINKER_FLAGS="-Xlinker $env:GITHUB_WORKSPACE/boost-1.85.0/stage/lib/libboost_fiber-clangw17-mt-x64-1_85.lib $env:GITHUB_WORKSPACE/boost-1.85.0/stage/lib/libboost_context-clangw17-mt-x64-1_85.lib" -DAdaptiveCpp_DIR="${{env.adcppto}}\lib\cmake\AdaptiveCpp" -DGMX_SIMD=AVX2_256 -DGMX_GPU=SYCL -DGMX_SYCL=ACPP -DSYCL_CXX_FLAGS_EXTRA="--acpp-clang-include-path=${{env.ROCM_PATH}}\lib\clang\17\include --acpp-clang=${{env.ROCM_PATH}}\bin\clang++.exe -DNOMINMAX" -DACPP_TARGETS="hip:gfx1100" -DCMAKE_C_COMPILER="${{env.ROCM_PATH}}\bin\clang.exe" -DCMAKE_CXX_COMPILER="${{env.ROCM_PATH}}\bin\clang++.exe" -DCMAKE_BUILD_TYPE=Release 
+          cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH="${{env.adcppto}};${{ env.fftwcompileto }}" -DCMAKE_EXE_LINKER_FLAGS="-Xlinker $env:GITHUB_WORKSPACE/boost-1.85.0/stage/lib/libboost_fiber-clangw17-mt-x64-1_85.lib $env:GITHUB_WORKSPACE/boost-1.85.0/stage/lib/libboost_context-clangw17-mt-x64-1_85.lib ${{env.ROCM_PATH}}/lib/amdhip64.lib ${{env.ROCM_PATH}}/lib/hiprtc.lib" -DAdaptiveCpp_DIR="${{env.adcppto}}\lib\cmake\AdaptiveCpp" -DGMX_SIMD=AVX2_256 -DGMX_GPU=SYCL -DGMX_SYCL=ACPP -DSYCL_CXX_FLAGS_EXTRA="--acpp-clang-include-path=${{env.ROCM_PATH}}\lib\clang\17\include --acpp-clang=${{env.ROCM_PATH}}\bin\clang++.exe -DNOMINMAX" -DACPP_TARGETS="hip:gfx1100" -DCMAKE_C_COMPILER="${{env.ROCM_PATH}}\bin\clang.exe" -DCMAKE_CXX_COMPILER="${{env.ROCM_PATH}}\bin\clang++.exe" -DCMAKE_BUILD_TYPE=Release 
           sed -i 's/-MD/-MT/g' build.ninja
           ninja install -j4; if (-not $?) { ninja install -j1 }
           Set-Location ../..
           Remove-Item -Path gromacs-${{ env.gmxversion }} -Recurse -Force
+
       - name: Copy DLLs and Test
         shell: pwsh
         run: |
