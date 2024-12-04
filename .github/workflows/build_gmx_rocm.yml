@@ -86,7 +86,7 @@ jobs:
           # $content = Get-Content $filePath
           # $newContent = $content -replace "msvc", "clang"
           # $newContent | Set-Content $filePath
-          .\b2.exe cxxstd=14 link=static runtime-link=shared --with-context --with-fiber --with-atomic --with-filesystem --with-test toolset=clang address-model=64 variant=release,debug --build-type=complete stage
+          .\b2.exe cxxstd=14 link=static runtime-link=shared runtime-link=static --with-context --with-fiber --with-atomic --with-filesystem --with-test toolset=clang address-model=64 --build-type=complete stage threading=multi debug release
 
       - name: Install ROCM HIP SDK
         if: steps.cache-rocm.outputs.cache-hit != 'true'
