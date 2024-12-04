@@ -112,12 +112,12 @@ jobs:
            ninja install -j4
            Copy-Item -Path "${{ env.adcppto }}\bin\*acpp-rt.dll" -Destination "${{ env.adcppto }}\bin\acpp-clang.dll"
 
-           mkdir acpp_dll
-           Copy-Item -Path "${{ env.adcppto }}\bin\*.dll" -Destination ".\acpp_dll\"
-
            dir "${{ env.adcppto }}\bin"
            dir "${{ env.adcppto }}\lib"
            Set-Location ../..
+
+           mkdir acpp_dll
+           Copy-Item -Path "${{ env.adcppto }}\bin\*.dll" -Destination ".\acpp_dll\"
 
       - name: Upload Acpp dll artifact
         uses: actions/upload-artifact@v4
