@@ -155,13 +155,12 @@ jobs:
       - name: Copy DLLs and Test
         shell: pwsh
         run: |
-          Move-Item -Path "${{ env.ROCM_PATH }}\bin\hip*.dll"  -Destination "${{ env.gmxcompileto }}\bin\" -Force
-          Move-Item -Path "${{ env.ROCM_PATH }}\bin\amd*.dll"  -Destination "${{ env.gmxcompileto }}\bin\" -Force
-          Move-Item -Path "${{ env.fftwcompileto }}\bin\*.dll" -Destination "${{ env.gmxcompileto }}\bin\" -Force
-          dir 
-          Set-Location ${{ env.gmxcompileto }}
-          Set-Location ${{ env.gmxcompileto }}\bin
-          .\gmx.exe -version
+          dumpbin /dependents "${{ env.gmxcompileto }}\bin\gmx.exe"
+          Copy-Item -Path "${{ env.ROCM_PATH }}\bin\hip*.dll"  -Destination "${{ env.gmxcompileto }}\bin\" -Force
+          Copy-Item -Path "${{ env.ROCM_PATH }}\bin\amd*.dll"  -Destination "${{ env.gmxcompileto }}\bin\" -Force
+          Copy-Item -Path "${{ env.fftwcompileto }}\bin\*.dll" -Destination "${{ env.gmxcompileto }}\bin\" -Force
+          # don't run gmx.exe because no AMD GPU
+          #.\gmx.exe -version
           
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
