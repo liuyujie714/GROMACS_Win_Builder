@@ -14,7 +14,7 @@ env:
 
 jobs:
   Ubuntu:
-    runs-on: Ubuntu 22.04
+    runs-on: Ubuntu 24.04
 
     if: github.event.repository.owner.id == github.event.sender.id
     steps:
@@ -68,9 +68,4 @@ jobs:
           make -j4 install
           source ${{env.gmxcompileto}}/bin/GMXRC
           gmx --version
-
-
-
-
-
 
