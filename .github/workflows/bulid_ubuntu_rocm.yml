@@ -33,7 +33,7 @@ jobs:
           sudo apt update
           wget -O amdgpu-install.deb http://repo.radeon.com/amdgpu-install/5.7/ubuntu/jammy/amdgpu-install_5.7.50700-1_all.deb
           sudo apt install ./amdgpu-install.deb -y
-          amdgpu-install -y --usecase=rocm,hiplibsdk,graphics --no-dkms
+          amdgpu-install -y --usecase=rocm,hiplibsdk,graphics --no-dkms --no-32
           # test
           rocminfo
           
