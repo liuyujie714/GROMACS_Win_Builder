@@ -10,7 +10,7 @@ env:
   gmxcompileto: /home/gmxfiles
   adcppto: /home/adcpp
   # must be 5.7
-  ROCM_PATH: /opt/rocm
+  ROCM_PATH: /home/rocm
 
 jobs:
   Ubuntu:
