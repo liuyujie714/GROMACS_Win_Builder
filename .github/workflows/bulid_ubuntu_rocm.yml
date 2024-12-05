@@ -44,7 +44,7 @@ jobs:
                    -DROCM_PATH=${{env.ROCM_PATH}} \
                    -DWITH_SSCP_COMPILER=OFF \
                    -DLLVM_DIR=${{env.ROCM_PATH}}/llvm/lib/cmake/llvm
-          make -j4 install
+          sudo make -j4 install
           cd ../..
       
       - name: Install GROMACS
@@ -60,7 +60,7 @@ jobs:
                    -DGMX_SIMD=AVX2_256 -DGMX_GPU=SYCL -DGMX_SYCL=ACPP \
                    -DACPP_TARGETS="hip:gfx1100,gfx1101,gfx1102" \
                    -DGMX_BUILD_OWN_FFTW=ON 
-          make -j4 install
+          sudo make -j4 install
           source ${{env.gmxcompileto}}/bin/GMXRC
           gmx --version
 
