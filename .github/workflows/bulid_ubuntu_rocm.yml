@@ -35,5 +35,4 @@ jobs:
           sudo apt install ./amdgpu-install.deb -y
           amdgpu-install -y --usecase=rocm,hiplibsdk,graphics --no-dkms --no-32
           # test
-          rocminfo
-          
+          #rocminfo
