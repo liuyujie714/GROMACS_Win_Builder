@@ -32,6 +32,7 @@ jobs:
 
       - name: Install Adaptive
         run: |
+          sudo apt install libboost-all-dev -y
           wget https://github.com/AdaptiveCpp/AdaptiveCpp/archive/refs/tags/v24.06.0.tar.gz
           tar -xf v24.06.0.tar.gz
           cd AdaptiveCpp-24.06.0 && mkdir build && cd build
