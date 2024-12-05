@@ -36,3 +36,37 @@ jobs:
           amdgpu-install -y --usecase=rocm,hiplibsdk,graphics --no-dkms --no-32
           # test
           #rocminfo
+
+      - name: Install Adaptive
+        run: |
+          wget https://github.com/AdaptiveCpp/AdaptiveCpp/archive/refs/tags/v24.06.0.tar.gz
+          tar -xf v24.06.0.tar.gz
+          cd AdaptiveCpp-24.06.0 && mkdir build && cd build
+          cmake .. -DCMAKE_INSTALL_PREFIX=${{env.adcppto}} \
+                   -DCMAKE_BUILD_TYPE=Release \
+                   -DCMAKE_C_COMPILER=${{env.ROCM_PATH}}/llvm/bin/clang \
+                   -DCMAKE_CXX_COMPILER=${{env.ROCM_PATH}}/llvm/bin/clang++ \
+                   -DWITH_ROCM_BACKEND=ON \
+                   -DROCM_PATH=${{env.ROCM_PATH}} \
+                   -DLLVM_DIR=${{env.ROCM_PATH}}llvm/lib/cmake/llvm
+          make -j4 install
+          cd ../..
+      
+      - name: Install GROMACS
+        run: |
+          wget https://ftp.gromacs.org/gromacs/gromacs-${{env.gmxversion}}.tar.gz
+          tar -xf gromacs-${{env.gmxversion}}.tar.gz
+          cd gromacs-${{env.gmxversion}} && mkdir build && cd build
+          cmake .. -DCMAKE_INSTALL_PREFIX=${{env.gmxcompileto}} \
+                   -DCMAKE_BUILD_TYPE=Release \
+                   -DCMAKE_PREFIX_PATH=${{env.adcppto}} \
+                   -DCMAKE_C_COMPILER=${{env.ROCM_PATH}}/llvm/bin/clang \
+                   -DCMAKE_CXX_COMPILER=${{env.ROCM_PATH}}/llvm/bin/clang++ \
+                   -DGMX_SIMD=AVX2_256 -DGMX_GPU=SYCL -DGMX_SYCL=ACPP \
+                   -DACPP_TARGETS="hip:gfx1100,gfx1101,gfx1102" \
+                   -DGMX_BUILD_OWN_FFTW=ON 
+          make -j4 install
+          source ${{env.gmxcompileto}}/bin/GMXRC
+          gmx --version
+
+
