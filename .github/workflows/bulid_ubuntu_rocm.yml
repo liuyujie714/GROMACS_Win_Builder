@@ -42,6 +42,7 @@ jobs:
                    -DCMAKE_CXX_COMPILER=${{env.ROCM_PATH}}/llvm/bin/clang++ \
                    -DWITH_ROCM_BACKEND=ON \
                    -DROCM_PATH=${{env.ROCM_PATH}} \
+                   -DWITH_SSCP_COMPILER=OFF \
                    -DLLVM_DIR=${{env.ROCM_PATH}}/llvm/lib/cmake/llvm
           make -j4 install
           cd ../..
