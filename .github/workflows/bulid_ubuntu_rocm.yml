@@ -31,7 +31,6 @@ jobs:
       - name: Install ROCM
         run: |
           sudo apt update
-          sudo apt install amdgpu-dkms
           wget -O amdgpu-install.deb http://repo.radeon.com/amdgpu-install/5.7/ubuntu/jammy/amdgpu-install_5.7.50700-1_all.deb
           sudo apt install ./amdgpu-install.deb -y
           amdgpu-install -y --usecase=rocm,hiplibsdk --no-dkms
