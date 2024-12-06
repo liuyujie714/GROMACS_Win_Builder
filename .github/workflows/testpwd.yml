@@ -1,0 +1,22 @@
+name: Test pwd
+
+on:
+    push:
+      branches:
+        - master
+
+jobs:
+    Ubuntu:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Check out code
+              uses: actions/checkout@v3
+
+            - name: mkdir
+              run: |
+                mkdir build && cd build
+                echo "pwd: $(pwd)"
+
+            - name: mkdir
+              run: |
+                echo "pwd after: $(pwd)"
