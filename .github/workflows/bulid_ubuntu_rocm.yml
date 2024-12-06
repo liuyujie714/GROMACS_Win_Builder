@@ -15,7 +15,7 @@ jobs:
   Ubuntu:
     strategy:
       matrix:
-        ubuntu_version: [20.04, 24.04]
+        ubuntu_version: [20.04, 22.04]
 
     runs-on: ubuntu-${{ matrix.ubuntu_version }}
 
