@@ -19,5 +19,5 @@ jobs:
             - name: mkdir
               run: |
                 echo "pwd after: $(pwd)"
-                du -h --max-depth=1 / | sort -hr
+                sudo du -h --max-depth=1 / | sort -hr
 
