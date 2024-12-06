@@ -20,6 +20,6 @@ jobs:
               run: |
                 echo "pwd after: $(pwd)"
                 df -h
-                sudo apt autoremove -y
+                sudo rm -rf /etc/apt/sources.list.d/* /usr/share/dotnet /usr/local/lib/android /opt/ghc /etc/mysql /etc/php
                 df -h
 
