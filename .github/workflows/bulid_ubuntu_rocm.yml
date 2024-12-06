@@ -48,7 +48,7 @@ jobs:
         with:
             boost_version: 1.78.0
             platform_version: "${{ matrix.ubuntu_version }}"
-            boost_install_dir: /home
+            boost_install_dir: ${{github.workspace}}
 
       - name: Install Adaptive
         env:
