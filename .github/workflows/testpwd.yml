@@ -19,5 +19,7 @@ jobs:
             - name: mkdir
               run: |
                 echo "pwd after: $(pwd)"
-                sudo du -h --max-depth=1 / | sort -hr
+                df -h
+                sudo apt autoremove -y
+                df -h
 
