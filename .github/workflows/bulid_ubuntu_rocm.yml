@@ -9,15 +9,12 @@ env:
   gmxversion: "2024.4"
   gmxcompileto: /home/gmxfiles
   adcppto: /home/adcpp
+  # must be 5.7
   ROCM_PATH: /opt/rocm
 
 jobs:
   Ubuntu:
-    strategy:
-      matrix:
-        ubuntu_version: [20.04]
-
-    runs-on: ubuntu-${{ matrix.ubuntu_version }}
+    runs-on: ubuntu-22.04
 
     if: github.event.repository.owner.id == github.event.sender.id
     steps:
@@ -27,34 +24,14 @@ jobs:
       - name: Install ROCM
         run: |
           sudo apt update
-          if [ "${{ matrix.ubuntu_version }}" == "20.04" ]; then
-            export UBUNTU_CODENAME="focal";
-          elif [ "${{ matrix.ubuntu_version }}" == "22.04" ]; then
-            export UBUNTU_CODENAME="jammy";
-          elif [ "${{ matrix.ubuntu_version }}" == "24.04" ]; then
-            export UBUNTU_CODENAME="noble";
-          else
-            echo "Unsupported Ubuntu version"; exit 1;
-          fi
-          wget -O amdgpu-install.deb http://repo.radeon.com/amdgpu-install/5.7/ubuntu/${UBUNTU_CODENAME}/amdgpu-install_5.7.50700-1_all.deb
+          wget -O amdgpu-install.deb http://repo.radeon.com/amdgpu-install/5.7/ubuntu/jammy/amdgpu-install_5.7.50700-1_all.deb
           sudo apt install ./amdgpu-install.deb -y
-          amdgpu-install -y --usecase=rocm,graphics --no-dkms --no-32
+          amdgpu-install -y --usecase=rocm,hiplibsdk,graphics --no-dkms --no-32
           # test
           #rocminfo
-
-      - name: Install boost
-        uses: MarkusJx/install-boost@v2.4.4
-        id: boost
-        with:
-            boost_version: 1.78.0
-            platform_version: "${{ matrix.ubuntu_version }}"
-            boost_install_dir: ${{github.workspace}}
-
       - name: Install Adaptive
-        env:
-          BOOST_ROOT: ${{ steps.boost.outputs.BOOST_ROOT }}
         run: |
-          #sudo apt install libboost-all-dev -y
+          sudo apt install libboost-all-dev -y
           wget https://github.com/AdaptiveCpp/AdaptiveCpp/archive/refs/tags/v24.06.0.tar.gz
           tar -xf v24.06.0.tar.gz
           cd AdaptiveCpp-24.06.0 && mkdir build && cd build
@@ -70,8 +47,6 @@ jobs:
           cd ../..
       
       - name: Install GROMACS
-        env:
-         BOOST_ROOT: ${{ steps.boost.outputs.BOOST_ROOT }}
         run: |
           wget https://ftp.gromacs.org/gromacs/gromacs-${{env.gmxversion}}.tar.gz
           tar -xf gromacs-${{env.gmxversion}}.tar.gz
@@ -87,5 +62,3 @@ jobs:
           sudo make -j4 install
           source ${{env.gmxcompileto}}/bin/GMXRC
           gmx --version
-
-
