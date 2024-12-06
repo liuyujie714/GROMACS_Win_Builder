@@ -42,9 +42,19 @@ jobs:
           # test
           #rocminfo
 
+      - name: Install boost
+        uses: MarkusJx/install-boost@v2.4.4
+        id: boost
+        with:
+            boost_version: 1.78.0
+            platform_version: "${{ matrix.ubuntu_version }}"
+            boost_install_dir: /home
+
       - name: Install Adaptive
+        env:
+          BOOST_ROOT: ${{ steps.boost.outputs.BOOST_ROOT }}
         run: |
-          sudo apt install libboost-all-dev -y
+          #sudo apt install libboost-all-dev -y
           wget https://github.com/AdaptiveCpp/AdaptiveCpp/archive/refs/tags/v24.06.0.tar.gz
           tar -xf v24.06.0.tar.gz
           cd AdaptiveCpp-24.06.0 && mkdir build && cd build
@@ -60,6 +70,8 @@ jobs:
           cd ../..
       
       - name: Install GROMACS
+        env:
+         BOOST_ROOT: ${{ steps.boost.outputs.BOOST_ROOT }}
         run: |
           wget https://ftp.gromacs.org/gromacs/gromacs-${{env.gmxversion}}.tar.gz
           tar -xf gromacs-${{env.gmxversion}}.tar.gz
