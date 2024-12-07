@@ -78,8 +78,8 @@ jobs:
       - name: Install LLVM ${{matrix.config.LLVM_VER}}
         if: steps.cache-llvm.outputs.cache-hit != 'true'
         run: |
-          wget https://github.com/llvm/llvm-project/releases/download/llvmorg-${{matrix.config.LLVM_FULL_VER}}/LLVM-${{matrix.config.LLVM_FULL_VER}}-win64.exe
-          7z.exe x -o"${{github.workspace}}/llvm" -y
+          wget -O llvm.exe https://github.com/llvm/llvm-project/releases/download/llvmorg-${{matrix.config.LLVM_FULL_VER}}/LLVM-${{matrix.config.LLVM_FULL_VER}}-win64.exe
+          7z.exe x llvm.exe -o"${{github.workspace}}/llvm" -y
 
       - name: Install ROCM HIP SDK
         if: steps.cache-rocm.outputs.cache-hit != 'true'
