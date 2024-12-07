@@ -54,6 +54,7 @@ jobs:
       - name: Download ninja & wget & sed tools
         run: |
           choco install ninja wget sed
+
       - name: Remove runner self LLVM
         run: |
           Remove-Item -Path "C:\Program Files\LLVM" -Force -Recurse
@@ -64,6 +65,15 @@ jobs:
           version: "17.0.1"
           arch: x64
           directory: ${{github.workspace}}/llvm
+
+      - name: Install ROCM HIP SDK
+        if: steps.cache-rocm.outputs.cache-hit != 'true'
+        run: |
+          Get-ComputerInfo | Format-Table CsSystemType,OSName,OSDisplayVersion
+          curl -Lfo setup.exe https://download.amd.com/developer/eula/rocm-hub/AMD-Software-PRO-Edition-23.Q4-WinSvr2022-For-HIP.exe
+          Start-Process setup.exe -ArgumentList '-install' -NoNewWindow -Wait
+          mkdir "${{env.ROCM_PATH}}"
+          Move-Item -Path "C:\Program Files\AMD\ROCm\5.7\*" -Destination "${{env.ROCM_PATH}}" -Force
 
       - name: Configure build for amd64
         uses: ilammy/msvc-dev-cmd@v1
@@ -89,15 +99,6 @@ jobs:
           .\b2.exe cxxstd=14 link=static runtime-link=shared runtime-link=static runtime-debugging=on --with-context --with-fiber --with-atomic --with-filesystem --with-test toolset=clang-win address-model=64 --build-type=complete stage threading=multi debug release
           .\b2.exe cxxstd=14 link=static runtime-link=shared runtime-link=static --with-context --with-fiber --with-atomic --with-filesystem --with-test toolset=clang-win address-model=64 --build-type=complete stage threading=multi debug release
 
-      - name: Install ROCM HIP SDK
-        if: steps.cache-rocm.outputs.cache-hit != 'true'
-        run: |
-          Get-ComputerInfo | Format-Table CsSystemType,OSName,OSDisplayVersion
-          curl -Lfo setup.exe https://download.amd.com/developer/eula/rocm-hub/AMD-Software-PRO-Edition-23.Q4-WinSvr2022-For-HIP.exe
-          Start-Process setup.exe -ArgumentList '-install' -NoNewWindow -Wait
-          mkdir "${{env.ROCM_PATH}}"
-          Move-Item -Path "C:\Program Files\AMD\ROCm\5.7\*" -Destination "${{env.ROCM_PATH}}" -Force
-      
       - name: Build AdaptiveCpp with LLVM
         shell: pwsh
         run: |
@@ -115,11 +116,10 @@ jobs:
            Copy-Item -Path "${{ env.adcppto }}\bin\*acpp-rt.dll" -Destination "${{ env.adcppto }}\bin\acpp-clang.dll"
            # copy libomp.dll to acpp bin
            Copy-Item -Path "$env:GITHUB_WORKSPACE\llvm\bin\libomp.dll" -Destination "${{ env.adcppto }}\bin"
-
            dir "${{ env.adcppto }}\bin"
            dir "${{ env.adcppto }}\lib"
            Set-Location ../..
-
+           
       - name: Upload Adcpp dll artifact
         uses: actions/upload-artifact@v4
         if: ${{ success() }}
@@ -161,7 +161,7 @@ jobs:
           Set-Location build
           dir "$env:GITHUB_WORKSPACE/boost-1.85.0/stage/lib"
           # support AMD RX 7600XT to 7900XTX
-          cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH="${{env.adcppto}};${{ env.fftwcompileto }}" -DCMAKE_EXE_LINKER_FLAGS="-Xlinker $env:GITHUB_WORKSPACE/boost-1.85.0/stage/lib/libboost_fiber-clangw17-mt-x64-1_85.lib $env:GITHUB_WORKSPACE/boost-1.85.0/stage/lib/libboost_context-clangw17-mt-x64-1_85.lib ${{env.ROCM_PATH}}/lib/amdhip64.lib ${{env.ROCM_PATH}}/lib/hiprtc.lib" -DAdaptiveCpp_DIR="${{env.adcppto}}\lib\cmake\AdaptiveCpp" -DGMX_SIMD=AVX2_256 -DGMX_GPU=SYCL -DGMX_SYCL=ACPP -DSYCL_CXX_FLAGS_EXTRA="--acpp-clang-include-path=${{env.ROCM_PATH}}/lib/clang/17/include --acpp-clang=${{env.ROCM_PATH}}/bin/clang++.exe -DNOMINMAX" -DACPP_TARGETS="hip:gfx1100,gfx1101,gfx1102" -DCMAKE_C_COMPILER="${{env.ROCM_PATH}}\bin\clang.exe" -DCMAKE_CXX_COMPILER="${{env.ROCM_PATH}}\bin\clang++.exe" -DCMAKE_BUILD_TYPE=Release 
+          cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH="${{env.adcppto}};${{ env.fftwcompileto }}" -DCMAKE_EXE_LINKER_FLAGS="-Xlinker $env:GITHUB_WORKSPACE/boost-1.85.0/stage/lib/libboost_fiber-clangw17-mt-x64-1_85.lib $env:GITHUB_WORKSPACE/boost-1.85.0/stage/lib/libboost_context-clangw17-mt-x64-1_85.lib ${{env.ROCM_PATH}}/lib/amdhip64.lib ${{env.ROCM_PATH}}/lib/hiprtc.lib" -DAdaptiveCpp_DIR="${{env.adcppto}}\lib\cmake\AdaptiveCpp" -DGMX_SIMD=AVX2_256 -DGMX_GPU=SYCL -DGMX_SYCL=ACPP -DSYCL_CXX_FLAGS_EXTRA="--acpp-clang-include-path=${{env.ROCM_PATH}}/lib/clang/17/include --acpp-clang=${{env.ROCM_PATH}}/bin/clang++.exe -DNOMINMAX" -DACPP_TARGETS="hip:gfx1100,gfx1101,gfx1102,gfx1030" -DCMAKE_C_COMPILER="${{env.ROCM_PATH}}\bin\clang.exe" -DCMAKE_CXX_COMPILER="${{env.ROCM_PATH}}\bin\clang++.exe" -DCMAKE_BUILD_TYPE=Release 
           sed -i 's/-MD/-MT/g' build.ninja
           ninja install -j4; if (-not $?) { ninja install -j1 }
           Set-Location ../..
