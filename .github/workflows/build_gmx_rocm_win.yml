@@ -11,12 +11,31 @@ env:
   fftwversion: "3.3.9"
   fftwcompileto: C:/fftw3
   adcppto: C:/Temp/adcpp
-  # must be 5.7
-  ROCM_PATH: C:/AMD/ROCm/5.7
 
 jobs:
   Windows:
+    strategy:
+      matrix:
+        config:
+          - {
+            ROCM_PATH: C:/AMD/ROCm/5.7,
+            ROCM_VER: 5.7,
+            ROCM_EXE: "AMD-Software-PRO-Edition-23.Q4-WinSvr2022-For-HIP.exe",
+            LLVM_VER: 17,
+            LLVM_FULL_VER: 17.0.1
+          }
+          - {
+            ROCM_PATH: C:/AMD/ROCm/6.1,
+            ROCM_VER: 6.1,
+            ROCM_EXE: "AMD-Software-PRO-Edition-24.Q3-WinSvr2022-For-HIP.exe",
+            LLVM_VER: 19,
+            LLVM_FULL_VER: 19.1.0
+          }
+
     runs-on: windows-2022
+
+    outputs:
+      rocm_ver: ${{matrix.config.ROCM_VER}}
 
     if: github.event.repository.owner.id == github.event.sender.id
     steps:
@@ -37,19 +56,19 @@ jobs:
           path: ${{env.fftwcompileto}}
           key: ${{runner.os}}-fftw3.3.9
 
-      - name: Cache LLVM 17
+      - name: Cache LLVM ${{matrix.config.LLVM_VER}}
         id: cache-llvm
         uses: actions/cache@v4
         with:
           path: ${{github.workspace}}/llvm
-          key: ${{runner.os}}-llvm-17
+          key: ${{runner.os}}-llvm-${{matrix.config.LLVM_VER}}
 
-      - name: Cache ROCM 5.7
+      - name: Cache ROCM ${{matrix.config.ROCM_VER}}
         id: cache-rocm
         uses: actions/cache@v4
         with:
-          path: ${{env.ROCM_PATH}}
-          key: ${{runner.os}}-rocm-5.7
+          path: ${{matrix.config.ROCM_PATH}}
+          key: ${{runner.os}}-rocm-${{matrix.config.ROCM_VER}}
             
       - name: Download ninja & wget & sed tools
         run: |
@@ -59,21 +78,22 @@ jobs:
         run: |
           Remove-Item -Path "C:\Program Files\LLVM" -Force -Recurse
 
-      - name: Install LLVM and Clang 17
-        uses: KyleMayes/install-llvm-action@v2
-        with:
-          version: "17.0.1"
-          arch: x64
-          directory: ${{github.workspace}}/llvm
+      - name: Install LLVM ${{matrix.config.LLVM_VER}}
+        if: steps.cache-llvm.outputs.cache-hit != 'true'
+        run: |
+          wget https://github.com/llvm/llvm-project/releases/download/llvmorg-${{matrix.config.LLVM_FULL_VER}}/LLVM-${{matrix.config.LLVM_FULL_VER}}-win64.exe
+          7x.exe x -o"${{github.workspace}}/llvm" -y
 
       - name: Install ROCM HIP SDK
         if: steps.cache-rocm.outputs.cache-hit != 'true'
         run: |
           Get-ComputerInfo | Format-Table CsSystemType,OSName,OSDisplayVersion
-          curl -Lfo setup.exe https://download.amd.com/developer/eula/rocm-hub/AMD-Software-PRO-Edition-23.Q4-WinSvr2022-For-HIP.exe
+          curl -Lfo setup.exe https://download.amd.com/developer/eula/rocm-hub/${{matrix.config.ROCM_EXE}}
           Start-Process setup.exe -ArgumentList '-install' -NoNewWindow -Wait
-          mkdir "${{env.ROCM_PATH}}"
-          Move-Item -Path "C:\Program Files\AMD\ROCm\5.7\*" -Destination "${{env.ROCM_PATH}}" -Force
+
+          # move to new path without space
+          mkdir "${{matrix.config.ROCM_PATH}}"
+          Move-Item -Path "C:\Program Files\AMD\ROCm\${{matrix.config.ROCM_VER}}\*" -Destination "${{matrix.config.ROCM_PATH}}" -Force
 
       - name: Configure build for amd64
         uses: ilammy/msvc-dev-cmd@v1
@@ -85,11 +105,11 @@ jobs:
         if: steps.cache-boost.outputs.cache-hit != 'true'
         shell: powershell
         env:
-          LLVM_PATH: "${{env.ROCM_PATH}}"
-          LD_LIBRARY_PATH: "${{env.ROCM_PATH}}/lib"
+          LLVM_PATH: "${{matrix.config.ROCM_PATH}}"
+          LD_LIBRARY_PATH: "${{matrix.config.ROCM_PATH}}/lib"
         run: |
           $env:PATH = "$env:GITHUB_WORKSPACE\llvm\bin;$env:PATH"
-          $env:PATH = "${{env.ROCM_PATH}}\bin;$env:PATH"
+          $env:PATH = "${{matrix.config.ROCM_PATH}}\bin;$env:PATH"
           $boostURL = "https://github.com/boostorg/boost/releases/download/boost-1.85.0/boost-1.85.0-b2-nodocs.7z"
           $boostFolderName = $boostUrl.Split("/")[-2]
           Invoke-WebRequest $boostURL -OutFile boost.7z
@@ -102,7 +122,7 @@ jobs:
       - name: Build AdaptiveCpp with LLVM
         shell: pwsh
         run: |
-           dir "${{env.ROCM_PATH}}\bin"
+           dir "${{matrix.config.ROCM_PATH}}\bin"
            $env:PATH = "$env:GITHUB_WORKSPACE\llvm\bin;$env:PATH"
           
            wget https://github.com/AdaptiveCpp/AdaptiveCpp/archive/refs/tags/v24.06.0.tar.gz
@@ -110,7 +130,7 @@ jobs:
            Set-Location AdaptiveCpp-24.06.0
            md build
            cd build
-           cmake .. -G Ninja -DCMAKE_PREFIX_PATH="$env:GITHUB_WORKSPACE\llvm" -DCMAKE_C_COMPILER=clang  -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_INSTALL_PREFIX=${{ env.adcppto }} -DBOOST_ROOT="$env:GITHUB_WORKSPACE/boost-1.85.0" -DBoost_COMPILER=-clangw17 -DBoost_ARCHITECTURE=-x64 -DCMAKE_BUILD_TYPE=Release 
+           cmake .. -G Ninja -DCMAKE_PREFIX_PATH="$env:GITHUB_WORKSPACE\llvm" -DCMAKE_C_COMPILER=clang  -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_INSTALL_PREFIX=${{ env.adcppto }} -DBOOST_ROOT="$env:GITHUB_WORKSPACE/boost-1.85.0" -DBoost_COMPILER=-clangw${{matrix.config.LLVM_VER}} -DBoost_ARCHITECTURE=-x64 -DCMAKE_BUILD_TYPE=Release 
            ninja install -j4
            # rename 
            Copy-Item -Path "${{ env.adcppto }}\bin\*acpp-rt.dll" -Destination "${{ env.adcppto }}\bin\acpp-clang.dll"
@@ -161,7 +181,7 @@ jobs:
           Set-Location build
           dir "$env:GITHUB_WORKSPACE/boost-1.85.0/stage/lib"
           # support AMD RX 7600XT to 7900XTX
-          cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH="${{env.adcppto}};${{ env.fftwcompileto }}" -DCMAKE_EXE_LINKER_FLAGS="-Xlinker $env:GITHUB_WORKSPACE/boost-1.85.0/stage/lib/libboost_fiber-clangw17-mt-x64-1_85.lib $env:GITHUB_WORKSPACE/boost-1.85.0/stage/lib/libboost_context-clangw17-mt-x64-1_85.lib ${{env.ROCM_PATH}}/lib/amdhip64.lib ${{env.ROCM_PATH}}/lib/hiprtc.lib" -DAdaptiveCpp_DIR="${{env.adcppto}}\lib\cmake\AdaptiveCpp" -DGMX_SIMD=AVX2_256 -DGMX_GPU=SYCL -DGMX_SYCL=ACPP -DSYCL_CXX_FLAGS_EXTRA="--acpp-clang-include-path=${{env.ROCM_PATH}}/lib/clang/17/include --acpp-clang=${{env.ROCM_PATH}}/bin/clang++.exe -DNOMINMAX" -DACPP_TARGETS="hip:gfx1100,gfx1101,gfx1102,gfx1030" -DCMAKE_C_COMPILER="${{env.ROCM_PATH}}\bin\clang.exe" -DCMAKE_CXX_COMPILER="${{env.ROCM_PATH}}\bin\clang++.exe" -DCMAKE_BUILD_TYPE=Release 
+          cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH="${{env.adcppto}};${{ env.fftwcompileto }}" -DCMAKE_EXE_LINKER_FLAGS="-Xlinker $env:GITHUB_WORKSPACE/boost-1.85.0/stage/lib/libboost_fiber-clangw${{matrix.config.LLVM_VER}}-mt-x64-1_85.lib $env:GITHUB_WORKSPACE/boost-1.85.0/stage/lib/libboost_context-clangw${{matrix.config.LLVM_VER}}-mt-x64-1_85.lib ${{matrix.config.ROCM_PATH}}/lib/amdhip64.lib ${{matrix.config.ROCM_PATH}}/lib/hiprtc.lib" -DAdaptiveCpp_DIR="${{env.adcppto}}\lib\cmake\AdaptiveCpp" -DGMX_SIMD=AVX2_256 -DGMX_GPU=SYCL -DGMX_SYCL=ACPP -DSYCL_CXX_FLAGS_EXTRA="--acpp-clang-include-path=${{matrix.config.ROCM_PATH}}/lib/clang/${{matrix.config.LLVM_VER}}/include --acpp-clang=${{matrix.config.ROCM_PATH}}/bin/clang++.exe -DNOMINMAX" -DACPP_TARGETS="hip:gfx1100,gfx1101,gfx1102,gfx1030" -DCMAKE_C_COMPILER="${{matrix.config.ROCM_PATH}}\bin\clang.exe" -DCMAKE_CXX_COMPILER="${{matrix.config.ROCM_PATH}}\bin\clang++.exe" -DCMAKE_BUILD_TYPE=Release 
           sed -i 's/-MD/-MT/g' build.ninja
           ninja install -j4; if (-not $?) { ninja install -j1 }
           Set-Location ../..
@@ -171,14 +191,18 @@ jobs:
         shell: pwsh
         run: |
           dumpbin /dependents "${{ env.gmxcompileto }}\bin\gmx.exe"
-          Copy-Item -Path "${{ env.ROCM_PATH }}\bin\hip*.dll"           -Destination "${{ env.gmxcompileto }}\bin\" -Force
-          Copy-Item -Path "${{ env.ROCM_PATH }}\bin\amd*.dll"           -Destination "${{ env.gmxcompileto }}\bin\" -Force
+          
+          # ROMC 5.7 is needed
+          7z x "${{github.workspace}}\patch\amddirver.7z"
+          Copy-Item -Path "${{github.workspace}}\*.dll"                 -Destination "${{ env.gmxcompileto }}\bin\" -Force
+
+          Copy-Item -Path "${{ matrix.config.ROCM_PATH }}\bin\hip*.dll" -Destination "${{ env.gmxcompileto }}\bin\" -Force
+          Copy-Item -Path "${{ matrix.config.ROCM_PATH }}\bin\amd*.dll" -Destination "${{ env.gmxcompileto }}\bin\" -Force
           Copy-Item -Path "${{ env.fftwcompileto }}\bin\*.dll"          -Destination "${{ env.gmxcompileto }}\bin\" -Force
           Copy-Item -Path "${{env.adcppto}}\bin\hipSYCL"                -Destination "${{ env.gmxcompileto }}\bin\" -Force -Recurse
           Copy-Item -Path "${{env.adcppto}}\bin\*.dll"                  -Destination "${{ env.gmxcompileto }}\bin\" -Force
           Copy-Item -Path "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Redist\MSVC\14.2*\debug_nonredist\x64\Microsoft.VC142.OpenMP.LLVM\libomp140.x86_64.dll" -Destination "${{ env.gmxcompileto }}\bin\" -Force
-          7z x "${{github.workspace}}\patch\amddirver.7z"
-          Copy-Item -Path "${{github.workspace}}\*.dll"                 -Destination "${{ env.gmxcompileto }}\bin\" -Force
+
           # test gmx if work
           Set-Location ${{ env.gmxcompileto }}\bin
           .\gmx.exe -version
@@ -245,7 +269,7 @@ jobs:
 
       - name: Package Windows artifact to release
         env:
-          OUTPUT_TAR: GROMACS-${{ env.gmxversion }}_ROCM.tar.gz
+          OUTPUT_TAR: GROMACS-${{ env.gmxversion }}_ROCM_${{needs.Windows.outputs.rocm_ver}}.tar.gz
         run: |
           ls -alt
           tar -czvf ${{env.OUTPUT_TAR}} share include bin
