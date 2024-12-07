@@ -94,7 +94,7 @@ jobs:
         run: |
           Get-ComputerInfo | Format-Table CsSystemType,OSName,OSDisplayVersion
           curl -Lfo setup.exe https://download.amd.com/developer/eula/rocm-hub/AMD-Software-PRO-Edition-24.Q3-WinSvr2022-For-HIP.exe
-          Start-Process setup.exe -ArgumentList '-install' -NoNewWindow -Wait
+          Start-Process setup.exe  -NoNewWindow -Wait
           mkdir "${{env.ROCM_PATH}}"
           Move-Item -Path "C:\Program Files\AMD\ROCm\6.1\*" -Destination "${{env.ROCM_PATH}}" -Force
       
