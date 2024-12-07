@@ -39,12 +39,12 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
 
-      - name: Cache Boost
+      - name: Cache Boost 1.85.0 with LLVM ${{matrix.config.LLVM_VER}}
         id: cache-boost
         uses: actions/cache@v4
         with:
           path: ${{github.workspace}}/boost-1.85.0
-          key: ${{runner.os}}-boost1850
+          key: ${{runner.os}}-boost1850-${{matrix.config.LLVM_FULL_VER}}
 
       - name: Cache FFTW3
         id: cache-fftw
