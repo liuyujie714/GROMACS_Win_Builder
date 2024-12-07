@@ -18,18 +18,18 @@ jobs:
       matrix:
         config:
           - {
-            ROCM_PATH: C:/AMD/ROCm/5.7,
+            ROCM_PATH: "C:/AMD/ROCm/5.7",
             ROCM_VER: 5.7,
             ROCM_EXE: "AMD-Software-PRO-Edition-23.Q4-WinSvr2022-For-HIP.exe",
             LLVM_VER: 17,
-            LLVM_FULL_VER: 17.0.1
+            LLVM_FULL_VER: "17.0.1"
           }
           - {
-            ROCM_PATH: C:/AMD/ROCm/6.1,
+            ROCM_PATH: "C:/AMD/ROCm/6.1",
             ROCM_VER: 6.1,
             ROCM_EXE: "AMD-Software-PRO-Edition-24.Q3-WinSvr2022-For-HIP.exe",
             LLVM_VER: 19,
-            LLVM_FULL_VER: 19.1.0
+            LLVM_FULL_VER: "19.1.0"
           }
 
     runs-on: windows-2022
