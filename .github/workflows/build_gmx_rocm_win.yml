@@ -34,9 +34,6 @@ jobs:
 
     runs-on: windows-2022
 
-    outputs:
-      rocm_ver: ${{matrix.config.ROCM_VER}}
-
     if: github.event.repository.owner.id == github.event.sender.id
     steps:
       - name: Check out code
@@ -82,7 +79,7 @@ jobs:
         if: steps.cache-llvm.outputs.cache-hit != 'true'
         run: |
           wget https://github.com/llvm/llvm-project/releases/download/llvmorg-${{matrix.config.LLVM_FULL_VER}}/LLVM-${{matrix.config.LLVM_FULL_VER}}-win64.exe
-          7x.exe x -o"${{github.workspace}}/llvm" -y
+          7z.exe x -o"${{github.workspace}}/llvm" -y
 
       - name: Install ROCM HIP SDK
         if: steps.cache-rocm.outputs.cache-hit != 'true'
@@ -192,7 +189,7 @@ jobs:
         run: |
           dumpbin /dependents "${{ env.gmxcompileto }}\bin\gmx.exe"
           
-          # ROMC 5.7 is needed
+          # ROCM 5.7 is needed
           7z x "${{github.workspace}}\patch\amddirver.7z"
           Copy-Item -Path "${{github.workspace}}\*.dll"                 -Destination "${{ env.gmxcompileto }}\bin\" -Force
 
@@ -211,13 +208,19 @@ jobs:
         uses: actions/upload-artifact@v4
         if: ${{ success() }}
         with:
-          name: gmx_bins
+          name: gmx_bins_rocm_${{matrix.config.ROCM_VER}}
           path: ${{ env.gmxcompileto }}
 
 
   # refer to https://github.com/endless-sky/endless-sky/blob/master/.github/workflows/cd.yaml
   Release:
     needs: [Windows]
+    strategy:
+      matrix:
+        config:
+          - ROCM_VER: 5.7
+          - ROCM_VER: 6.1
+
     runs-on: ubuntu-20.04
 
     env:
@@ -260,16 +263,15 @@ jobs:
           This is an automated build of the latest source. It may be unstable or even crash, corrupt your save or eat your kitten. Use with caution!
           https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           github-release ${{env.RELEASE_COMMAND}} --tag ${{ env.RELEASE_TAG }} --name "Bleed Release" --description "$DESCRIPTION" --pre-release
-      
 
       - name: Download Windows artifact
         uses: actions/download-artifact@v4
         with:
-          name: gmx_bins
+          name: gmx_bins_rocm_${{matrix.config.ROCM_VER}}
 
       - name: Package Windows artifact to release
         env:
-          OUTPUT_TAR: GROMACS-${{ env.gmxversion }}_ROCM_${{needs.Windows.outputs.rocm_ver}}.tar.gz
+          OUTPUT_TAR: GROMACS-${{ env.gmxversion }}_ROCM_${{matrix.config.ROCM_VER}}.tar.gz
         run: |
           ls -alt
           tar -czvf ${{env.OUTPUT_TAR}} share include bin
