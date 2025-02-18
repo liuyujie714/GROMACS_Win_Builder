@@ -92,7 +92,11 @@ jobs:
           ver=${{ env.gmxversion }}
           if [[ ${ver%%.*} -ge 2025 ]];then
             # patch openmp and gpu issue in MSVC and use MSBuild 
-            cd ../../ && patch -p0 < patch/2025-beta-gpu.patch && cd gromacs-${{ env.gmxversion }}/build
+            #cd ../../ && patch -p0 < patch/2025-beta-gpu.patch && cd gromacs-${{ env.gmxversion }}/build
+            if [[ ${ver} -eq "2025.0" ]]; then
+              echo "${ver} patch ....."
+              cd ../../ && patch -p0 < patch/2025.0-gpu.patch && cd gromacs-${{ env.gmxversion }}/build
+            fi
             # cmake 3.30 has bug for gmx2025
             pip install cmake==3.28
             which cmake
