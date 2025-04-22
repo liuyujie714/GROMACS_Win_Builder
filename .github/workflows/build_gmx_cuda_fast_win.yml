@@ -118,9 +118,8 @@ jobs:
           cd gromacs-${{ env.gmxversion }} && mkdir build && cd build
           choco install ninja
           ver=${{ env.gmxversion }}
-          cudaver=${{env.cudaversion}}
           cuda12opt=""
-          if [[ "${cudaver}" == "12.8" ]; then
+          if [[ "${{env.cudaversion}}" == "12.8" ]]; then
               cuda12opt="-DGMX_CUDA_TARGET_SM='100;120'"
           fi
           if [[ ${ver%%.*} -ge 2025 ]];then
