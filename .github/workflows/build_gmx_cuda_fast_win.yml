@@ -132,7 +132,7 @@ jobs:
             # cmake 3.30 has bug for gmx2025
             pip install cmake==3.28
             which cmake
-            cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH=${{ env.fftwcompileto }} -DGMX_SIMD=AVX2_256 -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release -DGMX_USE_PLUMED=OFF -DGMX_USE_COLVARS=NONE
+            cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH=${{ env.fftwcompileto }} -DGMX_SIMD=AVX2_256 -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release -DGMX_USE_PLUMED=OFF -DGMX_USE_COLVARS=INTERNAL
           elif [[ ${ver%%.*} -eq 2024 ]];then
             cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH=${{ env.fftwcompileto }} -DGMX_SIMD=AVX2_256 -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release ${cuda12opt}
           elif [[ ${ver%%.*} -ge 2021 ]];then
