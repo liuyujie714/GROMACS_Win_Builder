@@ -39,7 +39,7 @@ jobs:
           tar xf fftw_src.tar.gz
           
       - name: Install CUDA Toolkit 12.4
-        if: ${{env.cudaversion}} == 12.4
+        if: env.cudaversion == "12.4"
         run: |
           mkdir -p "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.4"
           mkdir -p "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.4\extras"
@@ -64,7 +64,7 @@ jobs:
           echo 'CUDA_PATH_V12_4=C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.4' | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
 
       - name: Install CUDA Toolkit 12.8
-        if: ${{env.cudaversion}} == 12.8
+        if: env.cudaversion == "12.8"
         run: |
           mkdir -p "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.8"
           mkdir -p "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.8\extras"
