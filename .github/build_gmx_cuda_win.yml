@@ -136,7 +136,7 @@ jobs:
   # refer to https://github.com/endless-sky/endless-sky/blob/master/.github/workflows/cd.yaml
   Release:
     needs: [Windows]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     env:
         RELEASE_COMMAND: release

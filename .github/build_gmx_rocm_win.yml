@@ -221,7 +221,7 @@ jobs:
           - ROCM_VER: 5.7
           - ROCM_VER: 6.1
 
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     env:
         RELEASE_COMMAND: release

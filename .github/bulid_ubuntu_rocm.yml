@@ -15,7 +15,7 @@ jobs:
   Ubuntu:
     strategy:
       matrix:
-        os_ver: [20.04, 22.04]
+        os_ver: [22.04, latest]
 
     runs-on: ubuntu-${{matrix.os_ver}}
 
