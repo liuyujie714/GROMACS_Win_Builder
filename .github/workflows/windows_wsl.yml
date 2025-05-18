@@ -28,7 +28,9 @@ jobs:
         run: wsl --list --online
 
       - name: install wsl distro
-        run: wsl --install -d Ubuntu-${{ matrix.os_ver }}
+        run: |
+          wsl --set-default-version 2
+          wsl --install -d Ubuntu-${{ matrix.os_ver }}
 
       - name: prevent wsl shutdown
         run:  wsl -d Ubuntu-${{ matrix.os_ver }} --exec dbus-launch true
@@ -49,7 +51,7 @@ jobs:
           # clean up space
           wsl -- sudo rm -rf /etc/apt/sources.list.d/* /usr/share/dotnet /usr/local/lib/android /opt/ghc /etc/mysql /etc/php
           wsl -- sudo apt update
-          wsl -- sudo apt install amdgpu-core -y
+ 
           wsl -- wget -O rocr4wsl.deb https://repo.radeon.com/amdgpu/6.3/ubuntu/pool/main/h/hsa-runtime-rocr4wsl-amdgpu/hsa-runtime-rocr4wsl-amdgpu_24.30-2089753.24.04_amd64.deb
           wsl -- sudo apt install ./rocr4wsl.deb -y
           
