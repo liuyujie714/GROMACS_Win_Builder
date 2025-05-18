@@ -1,0 +1,86 @@
+name: Build GROMACS with ROCM on WSL
+
+on:
+  push:
+    branches:
+      - master
+
+env:
+  gmxversion: "2024.4"
+  gmxcompileto: /home/gmxfiles
+  adcppto: /home/adcpp
+  ROCM_PATH: /opt/rocm
+
+jobs:
+  Wundows-wsl:
+    strategy:
+      matrix:
+        os_ver: [22.04, 24.04]
+
+    runs-on: windows-2025
+
+    if: github.event.repository.owner.id == github.event.sender.id
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: install wsl distro
+        run: wsl --install -d Ubuntu-${{ matrix.os_ver }}
+
+      - name: prevent wsl shutdown
+        run:  wsl -d  ${{ matrix.os_ver }} --exec dbus-launch true
+
+      - name: Install ROCM
+        run: |
+          if [ "${{ matrix.os_ver }}" == "20.04" ]; then
+            wsl -- export UBUNTU_CODENAME="focal";
+          elif [ "${{ matrix.os_ver }}" == "22.04" ]; then
+            wsl -- export UBUNTU_CODENAME="jammy";
+          else
+            wsl -- echo "Unsupported Ubuntu version"; exit 1;
+          fi
+
+          # clean up space
+          wsl -- sudo rm -rf /etc/apt/sources.list.d/* /usr/share/dotnet /usr/local/lib/android /opt/ghc /etc/mysql /etc/php
+          wsl -- sudo apt update
+          wsl --  wget -O amdgpu-install.deb http://repo.radeon.com/amdgpu-install/5.7/ubuntu/${UBUNTU_CODENAME}/amdgpu-install_5.7.50700-1_all.deb
+          wsl --  sudo apt install ./amdgpu-install.deb -y
+          wsl --   amdgpu-install -y --usecase=rocm,hiplibsdk,graphics --no-dkms --no-32
+          # test
+          #rocminfo
+
+      - name: Install Adaptive
+        run: |
+          wsl --  sudo apt install libboost-all-dev -y
+          wsl --  wget https://github.com/AdaptiveCpp/AdaptiveCpp/archive/refs/tags/v24.06.0.tar.gz
+          wsl --  tar -xf v24.06.0.tar.gz
+          wsl --  cd AdaptiveCpp-24.06.0 && mkdir build && cd build
+          wsl --  cmake .. -DCMAKE_INSTALL_PREFIX=${{env.adcppto}} \
+                   -DCMAKE_BUILD_TYPE=Release \
+                   -DCMAKE_C_COMPILER=${{env.ROCM_PATH}}/llvm/bin/clang \
+                   -DCMAKE_CXX_COMPILER=${{env.ROCM_PATH}}/llvm/bin/clang++ \
+                   -DWITH_ROCM_BACKEND=ON \
+                   -DROCM_PATH=${{env.ROCM_PATH}} \
+                   -DWITH_SSCP_COMPILER=OFF \
+                   -DLLVM_DIR=${{env.ROCM_PATH}}/llvm/lib/cmake/llvm
+          wsl -- sudo make -j4 install
+          wsl -- cd ../..
+      
+      - name: Install GROMACS
+        run: |
+          wsl --  wget https://ftp.gromacs.org/gromacs/gromacs-${{env.gmxversion}}.tar.gz
+          wsl --  tar -xf gromacs-${{env.gmxversion}}.tar.gz
+          wsl --  cd gromacs-${{env.gmxversion}} && mkdir build && cd build
+          wsl --  cmake .. -DCMAKE_INSTALL_PREFIX=${{env.gmxcompileto}} \
+                   -DCMAKE_BUILD_TYPE=Release \
+                   -DCMAKE_PREFIX_PATH=${{env.adcppto}} \
+                   -DCMAKE_C_COMPILER=${{env.ROCM_PATH}}/llvm/bin/clang \
+                   -DCMAKE_CXX_COMPILER=${{env.ROCM_PATH}}/llvm/bin/clang++ \
+                   -DGMX_SIMD=AVX2_256 -DGMX_GPU=SYCL -DGMX_SYCL=ACPP \
+                   -DACPP_TARGETS="hip:gfx1100,gfx1101,gfx1102" \
+                   -DGMX_BUILD_OWN_FFTW=ON 
+          wsl --   sudo make -j4 install
+          wsl --  source ${{env.gmxcompileto}}/bin/GMXRC
+          wsl --   gmx --version
+
+          
