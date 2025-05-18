@@ -15,7 +15,7 @@ jobs:
   Wundows-wsl:
     strategy:
       matrix:
-        os_ver: [20.04]
+        os_ver: [24.04]
 
     runs-on: windows-2025
 
