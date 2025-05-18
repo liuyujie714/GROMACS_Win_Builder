@@ -49,8 +49,9 @@ jobs:
           # clean up space
           wsl -- sudo rm -rf /etc/apt/sources.list.d/* /usr/share/dotnet /usr/local/lib/android /opt/ghc /etc/mysql /etc/php
           wsl -- sudo apt update
-          #wsl -- wget -O rocr4wsl.deb https://repo.radeon.com/amdgpu/6.3/ubuntu/pool/main/h/hsa-runtime-rocr4wsl-amdgpu/hsa-runtime-rocr4wsl-amdgpu_24.30-2089753.24.04_amd64.deb
-          #wsl -- sudo apt install ./rocr4wsl.deb -y
+          wsl -- sudo apt install amdgpu-core -y
+          wsl -- wget -O rocr4wsl.deb https://repo.radeon.com/amdgpu/6.3/ubuntu/pool/main/h/hsa-runtime-rocr4wsl-amdgpu/hsa-runtime-rocr4wsl-amdgpu_24.30-2089753.24.04_amd64.deb
+          wsl -- sudo apt install ./rocr4wsl.deb -y
           
           wsl -- wget -O amdgpu-install.deb http://repo.radeon.com/amdgpu-install/6.3/ubuntu/${UBUNTU_CODENAME}/amdgpu-install_6.3.60300-1_all.deb
           wsl -- sudo apt install ./amdgpu-install.deb -y
