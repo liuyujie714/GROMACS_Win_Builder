@@ -15,7 +15,7 @@ jobs:
   Wundows-wsl:
     strategy:
       matrix:
-        os_ver: [22.04, 24.04]
+        os_ver: [22.04]
 
     runs-on: windows-2025
 
@@ -31,7 +31,7 @@ jobs:
         run: wsl --install -d Ubuntu-${{ matrix.os_ver }}
 
       - name: prevent wsl shutdown
-        run:  wsl -d  ${{ matrix.os_ver }} --exec dbus-launch true
+        run:  wsl -d Ubuntu-${{ matrix.os_ver }} --exec dbus-launch true
 
       - name: Install ROCM
         run: |
