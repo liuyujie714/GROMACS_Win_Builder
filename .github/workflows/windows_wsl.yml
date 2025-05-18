@@ -15,7 +15,7 @@ jobs:
   Wundows-wsl:
     strategy:
       matrix:
-        os_ver: [24.04]
+        os_ver: [20.04]
 
     runs-on: windows-2025
 
@@ -37,9 +37,11 @@ jobs:
         shell: bash
         run: |
           if [ "${{ matrix.os_ver }}" == "20.04" ]; then
-            export UBUNTU_CODENAME="focal";
+            export UBUNTU_CODENAME="focal"
           elif [ "${{ matrix.os_ver }}" == "22.04" ]; then
-            export UBUNTU_CODENAME="jammy";
+            export UBUNTU_CODENAME="jammy"
+          elif [ "${{ matrix.os_ver }}" == "24.04" ]; then
+            export UBUNTU_CODENAME="noble"
           else
             echo "Unsupported Ubuntu version"; exit 1;
           fi
@@ -47,7 +49,7 @@ jobs:
           # clean up space
           wsl -- sudo rm -rf /etc/apt/sources.list.d/* /usr/share/dotnet /usr/local/lib/android /opt/ghc /etc/mysql /etc/php
           wsl -- sudo apt update
-          wsl --  wget -O amdgpu-install.deb http://repo.radeon.com/amdgpu-install/5.7/ubuntu/${UBUNTU_CODENAME}/amdgpu-install_5.7.50700-1_all.deb
+          wsl --  wget -O amdgpu-install.deb http://repo.radeon.com/amdgpu-install/6.2/ubuntu/${UBUNTU_CODENAME}/amdgpu-install_6.2.60200-1_all.deb
           wsl --  sudo apt install ./amdgpu-install.deb -y
           wsl --   amdgpu-install -y --usecase=rocm,hiplibsdk,graphics --no-dkms --no-32
           # test
