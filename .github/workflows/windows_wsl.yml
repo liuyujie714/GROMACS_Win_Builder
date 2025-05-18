@@ -24,6 +24,9 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
 
+      - name: List available version
+        run: wsl --list --online
+
       - name: install wsl distro
         run: wsl --install -d Ubuntu-${{ matrix.os_ver }}
 
