@@ -58,8 +58,8 @@ jobs:
           wsl -- wget -O amdgpu-core.deb http://repo.radeon.com/amdgpu/6.3/ubuntu/pool/main/a/amdgpu-core/amdgpu-core_6.3.60300-2084815.24.04_all.deb
           wsl -- sudo apt install ./amdgpu-core.deb -y
           
-          # wsl -- wget -O rocr4wsl.deb https://repo.radeon.com/amdgpu/6.3/ubuntu/pool/main/h/hsa-runtime-rocr4wsl-amdgpu/hsa-runtime-rocr4wsl-amdgpu_24.30-2089753.24.04_amd64.deb
-          # wsl -- sudo apt install ./rocr4wsl.deb -y
+          wsl -- wget -O rocr4wsl.deb https://repo.radeon.com/amdgpu/6.3/ubuntu/pool/main/h/hsa-runtime-rocr4wsl-amdgpu/hsa-runtime-rocr4wsl-amdgpu_24.30-2089753.24.04_amd64.deb
+          wsl -- sudo apt install ./rocr4wsl.deb -y
           
           wsl -- amdgpu-install -y --usecase=wsl,rocm,hiplibsdk,graphics --no-dkms --no-32
           # test
