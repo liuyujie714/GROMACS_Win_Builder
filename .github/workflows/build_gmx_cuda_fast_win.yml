@@ -147,7 +147,7 @@ jobs:
       - name: Run regression test
         shell: bash
         run: |
-          cd gromacs-${{ env.gmxversion }}/bulid
+          cd gromacs-${{ env.gmxversion }}/build
           ctest --output-on-failure
 
       - name: Copy DLLs and Test
