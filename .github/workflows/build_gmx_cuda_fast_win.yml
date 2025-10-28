@@ -149,7 +149,7 @@ jobs:
         shell: bash
         run: |
           cd gromacs-${{ env.gmxversion }}/build
-          ctest --output-on-failure
+          ninja check
 
       - name: Copy DLLs and Test
         shell: pwsh
