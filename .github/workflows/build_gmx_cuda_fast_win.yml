@@ -145,20 +145,19 @@ jobs:
           ninja -j4 || ninja -j1
           ninja install -j4 || ninja install -j1
 
-      - name: Run regression test
-        shell: bash
-        run: |
-          cd gromacs-${{ env.gmxversion }}/build
-          ninja check
-
-      - name: Copy DLLs and Test
+      - name: Copy DLLs & Set Path
         shell: pwsh
         run: |
           Copy-Item -Path "${{ env.CUDA_PATH }}\bin\cufft64_*.dll" -Destination "${{ env.gmxcompileto }}\bin\" -Force
           Copy-Item -Path "${{ env.fftwcompileto }}\bin\*.dll" -Destination "${{ env.gmxcompileto }}\bin\" -Force
-          Set-Location ${{ env.gmxcompileto }}
-          Set-Location ${{ env.gmxcompileto }}\bin
-          .\gmx.exe -version
+          echo "${{ env.gmxcompileto }}\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          
+      - name: Run regression test
+        shell: bash
+        run: |
+          gmx --version
+          cd gromacs-${{ env.gmxversion }}/build
+          ninja check -j4
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
