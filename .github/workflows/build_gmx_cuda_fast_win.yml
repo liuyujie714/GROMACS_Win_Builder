@@ -21,6 +21,12 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
 
+      - name: hdf5
+        run: |
+          vcpkg install hdf5:x64-windows-release
+          dir C:\vcpkg\installed\x64-windows-release\bin\hdf5*.dll
+          exit 1
+
       - name: Download Gromacs and FFTW
         shell: bash
         env:
@@ -125,6 +131,7 @@ jobs:
           if [[ "${ver%%.*}" =~ ^2026 ]];then
             #install hdf5
             vcpkg install hdf5:x64-windows-release
+            dir C:\vcpkg\installed\x64-windows-release\bin\hdf5*.dll
             cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH="${{ env.fftwcompileto }};C:/vcpkg/installed/x64-windows-release" -DGMX_SIMD=AVX2_256 -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release -DGMX_USE_PLUMED=OFF -DGMX_USE_COLVARS=INTERNAL -DGMX_USE_HDF5=ON -DREGRESSIONTEST_DOWNLOAD=ON
           elif [[ ${ver%%.*} -eq 2025 ]];then
             # patch openmp and gpu issue in MSVC and use MSBuild 
