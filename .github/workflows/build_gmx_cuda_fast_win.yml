@@ -21,6 +21,12 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
 
+      - name: hdf5
+        shell: bash
+        run: |
+          vcpkg install hdf5
+          exit 1
+
       - name: Download Gromacs and FFTW
         shell: bash
         env:
@@ -123,6 +129,8 @@ jobs:
               cuda12opt="-DGMX_CUDA_TARGET_SM='100;120'"
           fi
           if [[ "${ver%%.*}" =~ ^2026 ]];then
+            #install hdf5
+            
             cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH=${{ env.fftwcompileto }} -DGMX_SIMD=AVX2_256 -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release -DGMX_USE_PLUMED=OFF -DGMX_USE_COLVARS=INTERNAL -DGMX_USE_HDF5=ON -DREGRESSIONTEST_DOWNLOAD=ON
           elif [[ ${ver%%.*} -eq 2025 ]];then
             # patch openmp and gpu issue in MSVC and use MSBuild 
