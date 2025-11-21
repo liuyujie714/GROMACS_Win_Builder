@@ -24,7 +24,7 @@ jobs:
       - name: hdf5
         shell: bash
         run: |
-          vcpkg install hdf5
+          vcpkg install hdf5:x64-windows-release
           exit 1
 
       - name: Download Gromacs and FFTW
