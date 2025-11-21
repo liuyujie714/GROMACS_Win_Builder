@@ -20,14 +20,7 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v3
-
-      - name: hdf5
-        shell: bash
-        run: |
-          vcpkg install hdf5:x64-windows-release
-          ls "C:/vcpkg/installed/x64-windows-release/bin/hdf5*.dll"
-          exit 1
-
+        
       - name: Download Gromacs and FFTW
         shell: bash
         env:
@@ -156,16 +149,18 @@ jobs:
           ninja -j4 || ninja -j1
           ninja install -j4 || ninja install -j1
 
-          # copy hdf5 dll if gmx 2026
-          if [[ "${ver%%.*}" =~ ^2026 ]];then
-             cp "C:/vcpkg/installed/x64-windows-release/bin/hdf5*.dll" "${env.gmxcompileto}/bin/" -f
-          fi
-
       - name: Copy DLLs & Set Path
         shell: pwsh
         run: |
           Copy-Item -Path "${{ env.CUDA_PATH }}\bin\cufft64_*.dll" -Destination "${{ env.gmxcompileto }}\bin\" -Force
           Copy-Item -Path "${{ env.fftwcompileto }}\bin\*.dll" -Destination "${{ env.gmxcompileto }}\bin\" -Force
+          # copy hdf5 dll if exists
+          try {
+              Copy-Item "C:\vcpkg\installed\x64-windows-release\bin\hdf5*.dll" -Destination "${{ env.gmxcompileto }}\bin\" -Force -ErrorAction Stop
+              Write-Host "HDF5 DLL copy succeed"
+            } catch {
+           }
+          
           echo "${{ env.gmxcompileto }}\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
           
       - name: Run regression tests (Maybe some tests failed)
