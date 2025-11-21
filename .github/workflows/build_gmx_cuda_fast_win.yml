@@ -122,7 +122,7 @@ jobs:
           if [[ "${{env.cudaversion}}" == "12.8" ]]; then
               cuda12opt="-DGMX_CUDA_TARGET_SM='100;120'"
           fi
-          if [[ "${ver%%.*}"" =~ ^2026 ]];then
+          if [[ "${ver%%.*}" =~ ^2026 ]];then
             cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH=${{ env.fftwcompileto }} -DGMX_SIMD=AVX2_256 -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release -DGMX_USE_PLUMED=OFF -DGMX_USE_COLVARS=INTERNAL -DGMX_USE_HDF5=ON -DREGRESSIONTEST_DOWNLOAD=ON
           elif [[ ${ver%%.*} -eq 2025 ]];then
             # patch openmp and gpu issue in MSVC and use MSBuild 
