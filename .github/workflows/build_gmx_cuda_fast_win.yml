@@ -22,9 +22,10 @@ jobs:
         uses: actions/checkout@v3
 
       - name: hdf5
+        shell: bash
         run: |
           vcpkg install hdf5:x64-windows-release
-          dir C:\vcpkg\installed\x64-windows-release\bin\hdf5*.dll
+          ls "C:/vcpkg/installed/x64-windows-release/bin/hdf5*.dll"
           exit 1
 
       - name: Download Gromacs and FFTW
@@ -131,7 +132,6 @@ jobs:
           if [[ "${ver%%.*}" =~ ^2026 ]];then
             #install hdf5
             vcpkg install hdf5:x64-windows-release
-            dir C:\vcpkg\installed\x64-windows-release\bin\hdf5*.dll
             cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH="${{ env.fftwcompileto }};C:/vcpkg/installed/x64-windows-release" -DGMX_SIMD=AVX2_256 -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release -DGMX_USE_PLUMED=OFF -DGMX_USE_COLVARS=INTERNAL -DGMX_USE_HDF5=ON -DREGRESSIONTEST_DOWNLOAD=ON
           elif [[ ${ver%%.*} -eq 2025 ]];then
             # patch openmp and gpu issue in MSVC and use MSBuild 
@@ -155,6 +155,11 @@ jobs:
           sed -i 's/-MD/-MT/g' build.ninja
           ninja -j4 || ninja -j1
           ninja install -j4 || ninja install -j1
+
+          # copy hdf5 dll if gmx 2026
+          if [[ "${ver%%.*}" =~ ^2026 ]];then
+             cp "C:/vcpkg/installed/x64-windows-release/bin/hdf5*.dll" "${env.gmxcompileto}/bin/" -f
+          fi
 
       - name: Copy DLLs & Set Path
         shell: pwsh
