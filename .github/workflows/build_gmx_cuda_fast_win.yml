@@ -125,7 +125,7 @@ jobs:
           if [[ "${ver%%.*}" =~ ^2026 ]];then
             #install hdf5
             vcpkg install hdf5:x64-windows-release
-            cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH=${{ env.fftwcompileto }} -DGMX_SIMD=AVX2_256 -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release -DGMX_USE_PLUMED=OFF -DGMX_USE_COLVARS=INTERNAL  -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake -DGMX_USE_HDF5=ON -DREGRESSIONTEST_DOWNLOAD=ON
+            cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH="${{ env.fftwcompileto }};C:/vcpkg/installed/x64-windows-release" -DGMX_SIMD=AVX2_256 -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release -DGMX_USE_PLUMED=OFF -DGMX_USE_COLVARS=INTERNAL -DGMX_USE_HDF5=ON -DREGRESSIONTEST_DOWNLOAD=ON
           elif [[ ${ver%%.*} -eq 2025 ]];then
             # patch openmp and gpu issue in MSVC and use MSBuild 
             #cd ../../ && patch -p0 < patch/2025-beta-gpu.patch && cd gromacs-${{ env.gmxversion }}/build
