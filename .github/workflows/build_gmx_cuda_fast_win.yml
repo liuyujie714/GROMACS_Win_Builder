@@ -6,12 +6,12 @@ on:
       - master
 
 env:
-  gmxversion: "2026-rc"
+  gmxversion: "2025.4"
   gmxcompileto: C:/Temp/gmxfiles
   fftwversion: "3.3.9"
   fftwcompileto: C:/Temp/fftw3
   cudaversion: "12.8"
-  simd: AVX2_256
+  simd: SSE4.1
 
 jobs:
   Windows:
