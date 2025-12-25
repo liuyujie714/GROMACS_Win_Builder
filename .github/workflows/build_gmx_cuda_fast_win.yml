@@ -6,12 +6,12 @@ on:
       - master
 
 env:
-  gmxversion: "2025.4"
+  gmxversion: "2026-rc"
   gmxcompileto: C:/Temp/gmxfiles
   fftwversion: "3.3.9"
   fftwcompileto: C:/Temp/fftw3
   cudaversion: "12.8"
-  simd: SSE4.1
+  simd: AVX2_256
 
 jobs:
   Windows:
@@ -129,10 +129,10 @@ jobs:
           fi
           if [[ "${ver%%.*}" =~ ^2026 ]];then
             #install hdf5
-            vcpkg install hdf5:x64-windows-release
+            vcpkg install hdf5:x64-windows-static
             #fix missing header
             sed -i '/#include <vector>/a\#include <string>' ../src/gromacs/fileio/h5md/h5md_datasetbase.h
-            cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH="${{ env.fftwcompileto }};C:/vcpkg/installed/x64-windows-release" -DGMX_SIMD=${{env.simd}} -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release -DGMX_USE_PLUMED=OFF -DGMX_USE_COLVARS=INTERNAL -DGMX_USE_HDF5=ON -DREGRESSIONTEST_DOWNLOAD=ON
+            cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH="${{ env.fftwcompileto }};C:/vcpkg/installed/x64-windows-static" -DGMX_SIMD=${{env.simd}} -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release -DGMX_USE_PLUMED=OFF -DGMX_USE_COLVARS=INTERNAL -DGMX_USE_HDF5=ON -DREGRESSIONTEST_DOWNLOAD=ON
           elif [[ ${ver%%.*} -eq 2025 ]];then
             # patch openmp and gpu issue in MSVC and use MSBuild 
             #cd ../../ && patch -p0 < patch/2025-beta-gpu.patch && cd gromacs-${{ env.gmxversion }}/build
@@ -162,11 +162,11 @@ jobs:
           Copy-Item -Path "${{ env.CUDA_PATH }}\bin\cufft64_*.dll" -Destination "${{ env.gmxcompileto }}\bin\" -Force
           Copy-Item -Path "${{ env.fftwcompileto }}\bin\*.dll" -Destination "${{ env.gmxcompileto }}\bin\" -Force
           # copy hdf5 dll if exists
-          try {
-              Copy-Item "C:\vcpkg\installed\x64-windows-release\bin\*.dll" -Destination "${{ env.gmxcompileto }}\bin\" -Force -ErrorAction Stop
-              Write-Host "HDF5 DLL copy succeed"
-            } catch {
-           }
+          # try {
+          #     Copy-Item "C:\vcpkg\installed\x64-windows-release\bin\*.dll" -Destination "${{ env.gmxcompileto }}\bin\" -Force -ErrorAction Stop
+          #     Write-Host "HDF5 DLL copy succeed"
+          #   } catch {
+          #  }
           
           echo "${{ env.gmxcompileto }}\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
           
