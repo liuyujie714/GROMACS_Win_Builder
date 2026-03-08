@@ -6,7 +6,7 @@ on:
       - master
 
 env:
-  gmxversion: "2026.0"
+  gmxversion: "2026.1"
   gmxcompileto: C:/Temp/gmxfiles
   fftwversion: "3.3.9"
   fftwcompileto: C:/Temp/fftw3
@@ -42,8 +42,8 @@ jobs:
       - name: Hdf5
         run: |
           #install hdf5
-          vcpkg install --triplet=x64-windows-static
-          dir C:/vcpkg/triplets
+          vcpkg install hdf5:x64-windows-static
+          dir C:/vcpkg
           
       - name: Install CUDA Toolkit 12.4
         if: ${{env.cudaversion == '12.4' }} 
