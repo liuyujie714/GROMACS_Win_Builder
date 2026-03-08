@@ -43,7 +43,7 @@ jobs:
         run: |
           #install hdf5
           vcpkg install --triplet=x64-windows-static
-          dir C:/vcpkg/scripts/buildsystems/
+          dir "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\vcpkg\scripts/buildsystems"
           dir C:/vcpkg
           
       - name: Install CUDA Toolkit 12.4
