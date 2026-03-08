@@ -6,7 +6,7 @@ on:
       - master
 
 env:
-  gmxversion: "2026.1"
+  gmxversion: "2026.0"
   gmxcompileto: C:/Temp/gmxfiles
   fftwversion: "3.3.9"
   fftwcompileto: C:/Temp/fftw3
