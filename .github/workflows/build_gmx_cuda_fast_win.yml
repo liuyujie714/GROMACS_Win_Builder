@@ -38,6 +38,12 @@ jobs:
           fi
           curl -Lfo fftw_src.tar.gz ${{ env.fftwlink }}
           tar xf fftw_src.tar.gz
+
+      - name: Hdf5
+        run: |
+          #install hdf5
+          vcpkg install --triplet=x64-windows-static
+          dir C:/vcpkg/installed/x64-windows-static
           
       - name: Install CUDA Toolkit 12.4
         if: ${{env.cudaversion == '12.4' }} 
@@ -128,8 +134,6 @@ jobs:
               cuda12opt="-DGMX_CUDA_TARGET_SM='100;120'"
           fi
           if [[ "${ver%%.*}" =~ ^2026 ]];then
-            #install hdf5
-            vcpkg install --triplet=x64-windows-static
             #fix missing header
             sed -i '/#include <vector>/a\#include <string>' ../src/gromacs/fileio/h5md/h5md_datasetbase.h
             cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH="${{ env.fftwcompileto }};C:/vcpkg/installed/x64-windows-static" -DGMX_SIMD=${{env.simd}} -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release -DGMX_USE_PLUMED=OFF -DGMX_USE_COLVARS=INTERNAL -DGMX_USE_HDF5=ON -DCMAKE_EXE_LINKER_FLAGS="Shlwapi.lib" -DREGRESSIONTEST_DOWNLOAD=ON
