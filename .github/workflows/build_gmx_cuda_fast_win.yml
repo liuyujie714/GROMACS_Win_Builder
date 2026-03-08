@@ -42,7 +42,7 @@ jobs:
       - name: Hdf5
         run: |
           #install hdf5
-          vcpkg install hdf5:x64-windows-static
+          vcpkg install --triplet=x64-windows-static
           dir C:/vcpkg
           
       - name: Install CUDA Toolkit 12.4
@@ -136,7 +136,7 @@ jobs:
           if [[ "${ver%%.*}" =~ ^2026 ]];then
             #fix missing header
             sed -i '/#include <vector>/a\#include <string>' ../src/gromacs/fileio/h5md/h5md_datasetbase.h
-            cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH="${{ env.fftwcompileto }};C:/vcpkg/installed/x64-windows-static" -DGMX_SIMD=${{env.simd}} -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release -DGMX_USE_PLUMED=OFF -DGMX_USE_COLVARS=INTERNAL -DGMX_USE_HDF5=ON -DCMAKE_EXE_LINKER_FLAGS="Shlwapi.lib" -DREGRESSIONTEST_DOWNLOAD=ON
+            cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH="${{ env.fftwcompileto }};C:/vcpkg/packages" -DGMX_SIMD=${{env.simd}} -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release -DGMX_USE_PLUMED=OFF -DGMX_USE_COLVARS=INTERNAL -DGMX_USE_HDF5=ON -DCMAKE_EXE_LINKER_FLAGS="Shlwapi.lib" -DREGRESSIONTEST_DOWNLOAD=ON
           elif [[ ${ver%%.*} -eq 2025 ]];then
             # patch openmp and gpu issue in MSVC and use MSBuild 
             #cd ../../ && patch -p0 < patch/2025-beta-gpu.patch && cd gromacs-${{ env.gmxversion }}/build
