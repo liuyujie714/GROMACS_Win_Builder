@@ -43,7 +43,9 @@ jobs:
         run: |
           #install hdf5
           vcpkg install --triplet=x64-windows-static
-          dir C:/vcpkg/installed/x64-windows-static
+          dir C:/vcpkg
+          dir C:/vcpkg/packages
+          dir C:/vcpkg/installed/
           
       - name: Install CUDA Toolkit 12.4
         if: ${{env.cudaversion == '12.4' }} 
