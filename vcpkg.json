@@ -1,6 +1,6 @@
 {
   "dependencies": [ "hdf5" ],
-  "builtin-baseline": "d2452281016c6d77b6ef199d599d9929eafe4807",
+  "builtin-baseline": "9942fb5f996ea431c5ed8fb8d2a53f31d08df62e",
   "overrides": [
     { "name": "hdf5", "version": "1.14.6" }
   ]
