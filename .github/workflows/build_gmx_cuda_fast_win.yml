@@ -6,7 +6,7 @@ on:
       - master
 
 env:
-  gmxversion: "2025.5"
+  gmxversion: "main"
   gmxcompileto: C:/Temp/gmxfiles
   fftwversion: "3.3.11"
   fftwcompileto: C:/Temp/fftw3
@@ -28,7 +28,12 @@ jobs:
           gmxdownloadlink: https://ftp.gromacs.org/gromacs/gromacs-${{env.gmxversion}}.tar.gz
           fftwlink: https://fftw.org/fftw-${{env.fftwversion}}.tar.gz
         run: |
-          curl -Lfo gromacs_src.tar.gz ${{ env.gmxdownloadlink }}
+          if [ ${{ env.gmxversion }} == "main" ]; then
+            # latest development branch
+            curl -Lfo gromacs_src.tar.gz https://gitlab.com/gromacs/gromacs/-/archive/main/gromacs-main.tar.gz
+          else
+            curl -Lfo gromacs_src.tar.gz ${{ env.gmxdownloadlink }}
+          fi
           tar xf gromacs_src.tar.gz
           sed -i 's/${CMAKE_CXX17_STANDARD_COMPILE_OPTION}/-std c++17/g' "gromacs-${{ env.gmxversion }}/cmake/gmxManageNvccConfig.cmake"
           # remove 30, 35 and 37 for cuda 12
@@ -133,7 +138,7 @@ jobs:
           if [[ "${{env.cudaversion}}" == "12.8" ]]; then
               cuda12opt="-DGMX_CUDA_TARGET_SM='100;120'"
           fi
-          if [[ "${ver%%.*}" =~ ^2026 ]];then
+          if [[ "${ver%%.*}" =~ ^2026 ]] || [[ "$ver" == "main" ]]; then
             #fix missing header
             sed -i '/#include <vector>/a\#include <string>' ../src/gromacs/fileio/h5md/h5md_datasetbase.h
             cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH="${{ env.fftwcompileto }};C:/vcpkg/packages/hdf5_x64-windows-static" -DGMX_SIMD=${{env.simd}} -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release -DGMX_USE_PLUMED=OFF -DGMX_USE_COLVARS=INTERNAL -DGMX_USE_HDF5=ON -DCMAKE_EXE_LINKER_FLAGS="Shlwapi.lib" -DREGRESSIONTEST_DOWNLOAD=ON
