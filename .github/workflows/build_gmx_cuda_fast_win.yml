@@ -1,16 +1,17 @@
-name: Build Windows GROMACS with CUDA 12.X
+name: Build Windows GROMACS with CUDA toolkit
 
 on:
   push:
     branches:
       - master
+  workflow_dispatch:
 
 env:
   gmxversion: "main"
   gmxcompileto: C:/Temp/gmxfiles
   fftwversion: "3.3.11"
   fftwcompileto: C:/Temp/fftw3
-  cudaversion: "12.8"
+  cudaversion: "13.4"
   simd: AVX2_256
 
 jobs:
@@ -101,6 +102,34 @@ jobs:
           echo 'C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.8\libnvvp' | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
           echo 'CUDA_PATH=C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.8' | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
           echo 'CUDA_PATH_V12_8=C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.8' | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: Install CUDA Toolkit 13.4
+        if: ${{env.cudaversion == '13.4' }} 
+        run: |
+          mkdir -p "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.4"
+          mkdir -p "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.4\extras"
+          choco install unzip -y
+          curl -O "https://developer.download.nvidia.com/compute/cuda/redist/cuda_cudart/windows-x86_64/cuda_cudart-windows-x86_64-13.4.49-archive.zip"
+          curl -O "https://developer.download.nvidia.com/compute/cuda/redist/cuda_nvcc/windows-x86_64/cuda_nvcc-windows-x86_64-13.4.59-archive.zip"
+          curl -O "https://developer.download.nvidia.com/compute/cuda/redist/cuda_crt/windows-x86_64/cuda_crt-windows-x86_64-13.4.59-archive.zip"
+          curl -O "https://developer.download.nvidia.com/compute/cuda/redist/cuda_cccl/windows-x86_64/cuda_cccl-windows-x86_64-3.4.2-archive.zip"
+          curl -O "https://developer.download.nvidia.com/compute/cuda/redist/libcufft/windows-x86_64/libcufft-windows-x86_64-12.4.0.34-archive.zip"
+          curl -O "https://developer.download.nvidia.com/compute/cuda/redist/cuda_profiler_api/windows-x86_64/cuda_profiler_api-windows-x86_64-13.4.49-archive.zip"
+          curl -O "https://developer.download.nvidia.com/compute/cuda/redist/visual_studio_integration/windows-x86_64/visual_studio_integration-windows-x86_64-13.4.49-archive.zip"
+          
+          unzip '*.zip' -d "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.4"
+          xcopy "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.4\cuda_cudart-windows-x86_64-13.4.49-archive\*" "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.4" /E /I /H /Y
+          xcopy "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.4\cuda_nvcc-windows-x86_64-13.4.59-archive\*" "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.4" /E /I /H /Y
+          xcopy "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.4\cuda_crt-windows-x86_64-13.4.59-archive\*" "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.4" /E /I /H /Y
+          xcopy "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.4\cuda_cccl-windows-x86_64-3.4.2-archive\*" "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.4" /E /I /H /Y
+          xcopy "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.4\libcufft-windows-x86_64-12.4.0.34-archive\*" "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.4" /E /I /H /Y
+          xcopy "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.4\cuda_profiler_api-windows-x86_64-13.4.49-archive\*" "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.4" /E /I /H /Y
+          xcopy "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.4\visual_studio_integration-windows-x86_64-13.4.49-archive\*" "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.4\extras" /E /I /H /Y
+
+          echo 'C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.4\bin' | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          echo 'C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.4\libnvvp' | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          echo 'CUDA_PATH=C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.4' | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          echo 'CUDA_PATH_V13_4=C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.4' | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
 
       - name: Copy MSBuildExtensions
         run: |
@@ -222,10 +251,10 @@ jobs:
           echo "GITHUB_USER=$( echo ${{ github.repository }} | cut -d/ -f1 )" >> $GITHUB_ENV
           echo "GITHUB_REPO=$( echo ${{ github.repository }} | cut -d/ -f2 )" >> $GITHUB_ENV
 
-      # - name: Move/Create continuous tag
-      #   run: |
-      #     git tag --force ${{ env.RELEASE_TAG }} ${{ github.sha }}
-      #     git push --tags --force
+      - name: Move/Create continuous tag
+        run: |
+          git tag --force ${{ env.RELEASE_TAG }} ${{ github.sha }}
+          git push --tags --force
       
       - name: Check continuous release status
         run: |
