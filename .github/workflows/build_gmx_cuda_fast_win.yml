@@ -112,6 +112,7 @@ jobs:
           curl -O "https://developer.download.nvidia.com/compute/cuda/redist/cuda_cudart/windows-x86_64/cuda_cudart-windows-x86_64-13.4.49-archive.zip"
           curl -O "https://developer.download.nvidia.com/compute/cuda/redist/cuda_nvcc/windows-x86_64/cuda_nvcc-windows-x86_64-13.4.59-archive.zip"
           curl -O "https://developer.download.nvidia.com/compute/cuda/redist/cuda_crt/windows-x86_64/cuda_crt-windows-x86_64-13.4.59-archive.zip"
+          curl -O "https://developer.download.nvidia.com/compute/cuda/redist/libnvvm/windows-x86_64/libnvvm-windows-x86_64-13.4.59-archive.zip"
           curl -O "https://developer.download.nvidia.com/compute/cuda/redist/cuda_cccl/windows-x86_64/cuda_cccl-windows-x86_64-3.4.2-archive.zip"
           curl -O "https://developer.download.nvidia.com/compute/cuda/redist/libcufft/windows-x86_64/libcufft-windows-x86_64-12.4.0.34-archive.zip"
           curl -O "https://developer.download.nvidia.com/compute/cuda/redist/cuda_profiler_api/windows-x86_64/cuda_profiler_api-windows-x86_64-13.4.49-archive.zip"
@@ -121,6 +122,7 @@ jobs:
           xcopy "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.4\cuda_cudart-windows-x86_64-13.4.49-archive\*" "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.4" /E /I /H /Y
           xcopy "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.4\cuda_nvcc-windows-x86_64-13.4.59-archive\*" "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.4" /E /I /H /Y
           xcopy "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.4\cuda_crt-windows-x86_64-13.4.59-archive\*" "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.4" /E /I /H /Y
+          xcopy "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.4\libnvvm-windows-x86_64-13.4.59-archive\*" "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.4" /E /I /H /Y
           xcopy "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.4\cuda_cccl-windows-x86_64-3.4.2-archive\*" "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.4" /E /I /H /Y
           xcopy "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.4\libcufft-windows-x86_64-12.4.0.34-archive\*" "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.4" /E /I /H /Y
           xcopy "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.4\cuda_profiler_api-windows-x86_64-13.4.49-archive\*" "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.4" /E /I /H /Y
