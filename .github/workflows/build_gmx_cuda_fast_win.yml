@@ -29,7 +29,7 @@ jobs:
           gmxdownloadlink: https://ftp.gromacs.org/gromacs/gromacs-${{env.gmxversion}}.tar.gz
           fftwlink: https://fftw.org/fftw-${{env.fftwversion}}.tar.gz
         run: |
-          if [ ${{ env.gmxversion }} == "main" ]; then
+          if [ "${{ env.gmxversion }}" == "main" ]; then
             # latest development branch
             curl -Lfo gromacs_src.tar.gz https://gitlab.com/gromacs/gromacs/-/archive/main/gromacs-main.tar.gz
           else
@@ -173,6 +173,10 @@ jobs:
           if [[ "${ver%%.*}" =~ ^2026 ]] || [[ "$ver" == "main" ]]; then
             #fix missing header
             sed -i '/#include <vector>/a\#include <string>' ../src/gromacs/fileio/h5md/h5md_datasetbase.h
+            #fix or from gmx commit 595a98b
+            if [[ "$ver" == "main" ]]; then
+              grep -rlE 'static_assert\(.* or ' ../src | xargs sed -i.bak -E 's/(static_assert\(.*) or /\1 || /'
+            fi
             cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH="${{ env.fftwcompileto }};C:/vcpkg/packages/hdf5_x64-windows-static" -DGMX_SIMD=${{env.simd}} -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release -DGMX_USE_PLUMED=OFF -DGMX_USE_COLVARS=INTERNAL -DGMX_USE_HDF5=ON -DCMAKE_EXE_LINKER_FLAGS="Shlwapi.lib C:/vcpkg/packages/libaec_x64-windows-static/lib/szip-static.lib" -DREGRESSIONTEST_DOWNLOAD=ON
           elif [[ ${ver%%.*} -eq 2025 ]];then
             # patch openmp and gpu issue in MSVC and use MSBuild 
