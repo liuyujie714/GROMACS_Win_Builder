@@ -11,7 +11,7 @@ env:
   gmxcompileto: C:/Temp/gmxfiles
   fftwversion: "3.3.11"
   fftwcompileto: C:/Temp/fftw3
-  cudaversion: "13.4"
+  cudaversion: "12.8"
   simd: AVX2_256
 
 jobs:
