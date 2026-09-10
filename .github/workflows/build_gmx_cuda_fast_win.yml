@@ -204,7 +204,12 @@ jobs:
       - name: Copy DLLs & Set Path
         shell: pwsh
         run: |
-          Copy-Item -Path "${{ env.CUDA_PATH }}\bin\cufft64_*.dll" -Destination "${{ env.gmxcompileto }}\bin\" -Force
+          $cudaVer = [version]"${{ env.cudaversion }}"
+          if ($cudaVer -ge [version]"13.0") {
+            Copy-Item -Path "${{ env.CUDA_PATH }}\bin\x64\cufft64_*.dll" -Destination "${{ env.gmxcompileto }}\bin\" -Force
+          } else {
+            Copy-Item -Path "${{ env.CUDA_PATH }}\bin\cufft64_*.dll" -Destination "${{ env.gmxcompileto }}\bin\" -Force
+          }
           Copy-Item -Path "${{ env.fftwcompileto }}\bin\*.dll" -Destination "${{ env.gmxcompileto }}\bin\" -Force
           # copy hdf5 dll if exists
           # try {
