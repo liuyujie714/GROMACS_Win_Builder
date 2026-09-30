@@ -8,11 +8,12 @@ on:
 
 env:
   gmxversion: "main"
-  gmxcompileto: C:/Temp/gmxfiles
   fftwversion: "3.3.11"
-  fftwcompileto: C:/Temp/fftw3
   cudaversion: "12.8"
+  hwloc_version: "2.14" # only for gmx >= 2026
   simd: AVX2_256
+  gmxcompileto: C:/Temp/gmxfiles
+  fftwcompileto: C:/Temp/fftw3
 
 jobs:
   Windows:
@@ -177,7 +178,13 @@ jobs:
             #if [[ "$ver" == "main" ]]; then
               #grep -rlE 'static_assert\(.* or ' ../src | xargs sed -i.bak -E 's/(static_assert\(.*) or /\1 || /'
             #fi
-            cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH="${{ env.fftwcompileto }};C:/vcpkg/packages/hdf5_x64-windows-static" -DGMX_SIMD=${{env.simd}} -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release -DGMX_USE_PLUMED=OFF -DGMX_USE_COLVARS=INTERNAL -DGMX_USE_HDF5=ON -DCMAKE_EXE_LINKER_FLAGS="Shlwapi.lib C:/vcpkg/packages/libaec_x64-windows-static/lib/szip-static.lib" -DREGRESSIONTEST_DOWNLOAD=ON
+
+            # add hwloc
+            curl -O https://download.open-mpi.org/release/hwloc/v${{env.hwloc_version}}/hwloc-win64-build-${{env.hwloc_version}}.0.zip
+            unzip hwloc-win64-build-${{env.hwloc_version}}.0.zip
+            mv hwloc-win64-build-${{env.hwloc_version}}.0 hwloc
+
+            cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH="${{ env.fftwcompileto }};C:/vcpkg/packages/hdf5_x64-windows-static;${{ github.workspace }}/hwloc" -DGMX_SIMD=${{env.simd}} -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release -DGMX_USE_PLUMED=OFF -DGMX_USE_COLVARS=INTERNAL -DGMX_USE_HDF5=ON -DCMAKE_EXE_LINKER_FLAGS="Shlwapi.lib C:/vcpkg/packages/libaec_x64-windows-static/lib/szip-static.lib" -DREGRESSIONTEST_DOWNLOAD=ON -DGMX_HWLOC=ON -DGMX_HWLOC_FORCE=ON
           elif [[ ${ver%%.*} -eq 2025 ]];then
             # patch openmp and gpu issue in MSVC and use MSBuild 
             #cd ../../ && patch -p0 < patch/2025-beta-gpu.patch && cd gromacs-${{ env.gmxversion }}/build
@@ -210,7 +217,11 @@ jobs:
           } else {
             Copy-Item -Path "${{ env.CUDA_PATH }}\bin\cufft64_*.dll" -Destination "${{ env.gmxcompileto }}\bin\" -Force
           }
-          Copy-Item -Path "${{ env.fftwcompileto }}\bin\*.dll" -Destination "${{ env.gmxcompileto }}\bin\" -Force
+          Copy-Item -Path "${{ env.fftwcompileto }}\bin\*.dll"  -Destination "${{ env.gmxcompileto }}\bin\" -Force
+          # copy hwloc if exists
+          $src = "${{ github.workspace }}\hwloc\bin"
+          if (Test-Path $src) { Copy-Item "$src\*.dll" "${{ env.gmxcompileto }}\bin\" -Force }
+
           # copy hdf5 dll if exists
           # try {
           #     Copy-Item "C:\vcpkg\installed\x64-windows-release\bin\*.dll" -Destination "${{ env.gmxcompileto }}\bin\" -Force -ErrorAction Stop
