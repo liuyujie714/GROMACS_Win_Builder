@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 env:
-  gmxversion: "2026.4"
+  gmxversion: "main"
   fftwversion: "3.3.11"
   cudaversion: "12.8"
   hwloc_version: "2.14" # only for gmx >= 2026
