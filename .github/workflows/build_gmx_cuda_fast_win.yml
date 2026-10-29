@@ -175,11 +175,11 @@ jobs:
             #fix missing header
             sed -i '/#include <vector>/a\#include <string>' ../src/gromacs/fileio/h5md/h5md_datasetbase.h
             #fix or from gmx commit 595a98b
-            if [[ "$ver" == "main" ]]; then
+            #if [[ "$ver" == "main" ]]; then
               #grep -rlE 'static_assert\(.* or ' ../src | xargs sed -i.bak -E 's/(static_assert\(.*) or /\1 || /'
               #fix MSVC
               #sed -i 's/constexpr gmx::EnumerationArray/extern const gmx::EnumerationArray/' ../src/gromacs/topology/ifunc.cpp
-            fi
+            #fi
 
             # add hwloc
             curl -O https://download.open-mpi.org/release/hwloc/v${{env.hwloc_version}}/hwloc-win64-build-${{env.hwloc_version}}.0.zip
