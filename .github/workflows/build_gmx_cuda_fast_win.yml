@@ -46,13 +46,12 @@ jobs:
           curl -Lfo fftw_src.tar.gz ${{ env.fftwlink }}
           tar xf fftw_src.tar.gz
 
-      - name: Hdf5
+      - name: Hdf5 if needed
+        if: ${{ env.gmxversion == 'main' || startsWith(env.gmxversion, '2026') }}
         run: |
           #install hdf5
           vcpkg install --triplet=x64-windows-release
           dir C:/vcpkg/packages
-          dir C:/vcpkg/packages/libaec_x64-windows-release/lib/
-          dir C:/vcpkg/packages/zlib_x64-windows-release/lib/
           
       - name: Install CUDA Toolkit 12.4
         if: ${{env.cudaversion == '12.4' }} 
