@@ -227,18 +227,23 @@ jobs:
 
           # copy hdf5 dll if exists
           try {
-              Copy-Item "C:\vcpkg\installed\x64-windows-release\bin\*.dll" -Destination "${{ env.gmxcompileto }}\bin\" -Force -ErrorAction Stop
+              Copy-Item "C:\vcpkg\packages\zlib_x64-windows-release\bin\*.dll"   -Destination "${{ env.gmxcompileto }}\bin\" -Force -ErrorAction Stop
+              Copy-Item "C:\vcpkg\packages\libaec_x64-windows-release\bin\*.dll" -Destination "${{ env.gmxcompileto }}\bin\" -Force -ErrorAction Stop
+              Copy-Item "C:\vcpkg\packages\hdf5_x64-windows-release\bin\*.dll"   -Destination "${{ env.gmxcompileto }}\bin\" -Force -ErrorAction Stop
               Write-Host "HDF5 DLL copy succeed"
-            } catch {
-           }
+          } catch {
+          }
           
           echo "${{ env.gmxcompileto }}\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      - name: Check gmx --version
+        run: |
+          gmx --version
           
       - name: Run regression tests (Maybe some tests failed)
         shell: bash
         continue-on-error: true
         run: |
-          gmx --version
           cd gromacs-${{ env.gmxversion }}/build
           ninja check -j4
 
