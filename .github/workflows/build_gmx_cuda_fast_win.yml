@@ -46,8 +46,8 @@ jobs:
           curl -Lfo fftw_src.tar.gz ${{ env.fftwlink }}
           tar xf fftw_src.tar.gz
 
-      - name: Hdf5 if needed
-        if: ${{ env.gmxversion == 'main' || startsWith(env.gmxversion, '2026') }}
+      - name: Hdf5 if gmx>=2026
+        if: ${{ env.gmxversion == 'main' || startsWith(env.gmxversion, '2026') || startsWith(env.gmxversion, '2027') }}
         run: |
           #install hdf5
           vcpkg install --triplet=x64-windows-release
