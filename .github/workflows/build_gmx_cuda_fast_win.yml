@@ -49,10 +49,10 @@ jobs:
       - name: Hdf5
         run: |
           #install hdf5
-          vcpkg install --triplet=x64-windows-static
+          vcpkg install --triplet=x64-windows-release
           dir C:/vcpkg/packages
-          dir C:/vcpkg/packages/libaec_x64-windows-static/lib/
-          dir C:/vcpkg/packages/zlib_x64-windows-static/lib/
+          dir C:/vcpkg/packages/libaec_x64-windows-release/lib/
+          dir C:/vcpkg/packages/zlib_x64-windows-release/lib/
           
       - name: Install CUDA Toolkit 12.4
         if: ${{env.cudaversion == '12.4' }} 
@@ -187,7 +187,7 @@ jobs:
             unzip hwloc-win64-build-${{env.hwloc_version}}.0.zip
             mv hwloc-win64-build-${{env.hwloc_version}}.0 "${{ github.workspace }}/hwloc"
 
-            cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH="${{ env.fftwcompileto }};C:/vcpkg/packages/hdf5_x64-windows-static;C:/vcpkg/packages/zlib_x64-windows-static;C:/vcpkg/packages/libaec_x64-windows-static" -DZLIB_LIBRARY="C:/vcpkg/packages/zlib_x64-windows-static/lib/zs.lib" -DHWLOC_DIR="${{ github.workspace }}/hwloc" -DGMX_SIMD=${{env.simd}} -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release -DGMX_USE_PLUMED=OFF -DGMX_USE_COLVARS=INTERNAL -DGMX_USE_HDF5=ON -DCMAKE_EXE_LINKER_FLAGS="Shlwapi.lib C:/vcpkg/packages/libaec_x64-windows-static/lib/szip-static.lib" -DREGRESSIONTEST_DOWNLOAD=ON -DGMX_HWLOC=ON -DGMX_HWLOC_FORCE=ON
+            cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=${{ env.gmxcompileto }} -DCMAKE_PREFIX_PATH="${{ env.fftwcompileto }};C:/vcpkg/packages/hdf5_x64-windows-release;C:/vcpkg/packages/zlib_x64-windows-release;C:/vcpkg/packages/libaec_x64-windows-release" -DZLIB_LIBRARY="C:/vcpkg/packages/zlib_x64-windows-release/lib/z.lib" -DHWLOC_DIR="${{ github.workspace }}/hwloc" -DGMX_SIMD=${{env.simd}} -DGMX_GPU=CUDA -DCMAKE_BUILD_TYPE=Release -DGMX_USE_PLUMED=OFF -DGMX_USE_COLVARS=INTERNAL -DGMX_USE_HDF5=ON -DCMAKE_EXE_LINKER_FLAGS="Shlwapi.lib C:/vcpkg/packages/libaec_x64-windows-release/lib/szip.lib" -DREGRESSIONTEST_DOWNLOAD=ON -DGMX_HWLOC=ON -DGMX_HWLOC_FORCE=ON
           elif [[ ${ver%%.*} -eq 2025 ]];then
             # patch openmp and gpu issue in MSVC and use MSBuild 
             #cd ../../ && patch -p0 < patch/2025-beta-gpu.patch && cd gromacs-${{ env.gmxversion }}/build
@@ -226,11 +226,11 @@ jobs:
           if (Test-Path $src) { Copy-Item "$src\*.dll" "${{ env.gmxcompileto }}\bin\" -Force }
 
           # copy hdf5 dll if exists
-          # try {
-          #     Copy-Item "C:\vcpkg\installed\x64-windows-release\bin\*.dll" -Destination "${{ env.gmxcompileto }}\bin\" -Force -ErrorAction Stop
-          #     Write-Host "HDF5 DLL copy succeed"
-          #   } catch {
-          #  }
+          try {
+              Copy-Item "C:\vcpkg\installed\x64-windows-release\bin\*.dll" -Destination "${{ env.gmxcompileto }}\bin\" -Force -ErrorAction Stop
+              Write-Host "HDF5 DLL copy succeed"
+            } catch {
+           }
           
           echo "${{ env.gmxcompileto }}\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
           
