@@ -52,6 +52,7 @@ jobs:
           vcpkg install --triplet=x64-windows-static
           dir C:/vcpkg/packages
           dir C:/vcpkg/packages/libaec_x64-windows-static/lib/
+          dir C:/vcpkg/packages/zlib_x64-windows-static/lib/
           
       - name: Install CUDA Toolkit 12.4
         if: ${{env.cudaversion == '12.4' }} 
